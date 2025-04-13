@@ -35,7 +35,17 @@ include_directories("${SPDLOG_INCLUDE_DIR}")
 include_directories("${NLOHMANN_INCLUDE_DIR}")
 include_directories("${JSONUTILS_INCLUDE_DIR}")
 
+if(APPLE)
+	link_directories("${JSONUTILS_LIB_DIR}")
+endif()
+
 add_library (CurlWrapper SHARED ${SOURCES} ${HEADERS})
+
+if(APPLE)
+  target_link_libraries(CurlWrapper JSONUtils)
+	target_link_libraries(CurlWrapper curl)
+	target_link_libraries(CurlWrapper z)
+endif()
 
 install (TARGETS CurlWrapper DESTINATION lib)
 install (FILES ${HEADERS} DESTINATION include)
