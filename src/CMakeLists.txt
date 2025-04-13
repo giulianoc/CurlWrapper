@@ -31,10 +31,9 @@ SET (HEADERS
 	Convert.h
 	CurlWrapper.h
 )
-
-include_directories("${PROJECT_SOURCE_DIR}/../deploy/spdlog/include")
-include_directories("${PROJECT_SOURCE_DIR}/../deploy/nlohmann/include")
-include_directories("${PROJECT_SOURCE_DIR}/CatraLibraries/JSONUtils/src")
+include_directories("${SPDLOG_INCLUDE_DIR}")
+include_directories("${NLOHMANN_INCLUDE_DIR}")
+include_directories("${JSONUTILS_INCLUDE_DIR}")
 
 add_library (CurlWrapper SHARED ${SOURCES} ${HEADERS})
 
