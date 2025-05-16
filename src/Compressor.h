@@ -1,6 +1,6 @@
 
 /*
- Copyright (C) Giuliano Catrambone (giuliano.catrambone@catrasoftware.it)
+ Copyright (C) Giuliano Catrambone (giulianocatrambone@gmail.com)
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -32,16 +32,16 @@
 
 using namespace std;
 
-class Compressor {
+class Compressor
+{
 
-public:
-  /** Compress a STL string using zlib with given compression level and return
-   * the binary data. */
-  static string compress_string(const string &str,
-                                int compressionlevel = Z_DEFAULT_COMPRESSION);
-  // int compressionlevel = Z_BEST_COMPRESSION);
+  public:
+	/** Compress a STL string using zlib with given compression level and return
+	 * the binary data. */
+	static string compress_string(const string &str, int compressionlevel = Z_DEFAULT_COMPRESSION);
+	// int compressionlevel = Z_BEST_COMPRESSION);
 
-  static string decompress_string(const vector<uint8_t> &str);
+	static string decompress_string(const vector<uint8_t> &str);
 };
 
 #endif
