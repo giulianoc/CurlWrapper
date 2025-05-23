@@ -35,6 +35,8 @@ include_directories("${SPDLOG_INCLUDE_DIR}")
 include_directories("${NLOHMANN_INCLUDE_DIR}")
 include_directories("${JSONUTILS_INCLUDE_DIR}")
 
+add_compile_options(-DCOMPRESSOR)
+
 if(APPLE)
 	link_directories("${JSONUTILS_LIB_DIR}")
 endif()
