@@ -941,11 +941,12 @@ void CurlWrapper::httpGetBinary(
 				{
 					string errorMessage = std::format(
 						"{} failed, wrong return status"
+						", url: {}"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
 						// ", response: {}"
 						", responseCode: {}",
-						api, referenceToLog,
+						api, url, referenceToLog,
 						chrono::duration_cast<chrono::seconds>(end - start).count(), // regex_replace(response, regex("\n"), " "),
 						responseCode
 					);
@@ -1239,12 +1240,13 @@ string CurlWrapper::httpDelete(
 				{
 					string errorMessage = std::format(
 						"{} failed, wrong return status"
+						", url: {}"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
 						", response: {}"
 						", responseCode: {}",
-						api, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), regex_replace(response, regex("\n"), " "),
-						responseCode
+						api, url, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(),
+						regex_replace(response, regex("\n"), " "), responseCode
 					);
 
 					throw HTTPError(responseCode, errorMessage);
@@ -1549,11 +1551,12 @@ pair<string, string> CurlWrapper::httpPostPutString(
 				{
 					string errorMessage = std::format(
 						"{} failed, wrong return status"
+						", url: {}"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
 						", responseHeaderAndBody: {}"
 						", responseCode: {}",
-						api, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), responseHeaderAndBody, responseCode
+						api, url, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), responseHeaderAndBody, responseCode
 					);
 
 					throw HTTPError(responseCode, errorMessage);
@@ -1881,11 +1884,12 @@ void CurlWrapper::httpPostPutBinary(
 				{
 					string errorMessage = std::format(
 						"{} failed, wrong return status"
+						", url: {}"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
 						", responseCode: {}"
 						", responseMessage: {}",
-						api, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), responseCode,
+						api, url, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), responseCode,
 						string(binary.begin(), binary.end())
 					);
 
@@ -2250,12 +2254,13 @@ string CurlWrapper::httpPostPutFile(
 				{
 					string errorMessage = std::format(
 						"{} failed, wrong return status"
+						", url: {}"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
 						", response: {}"
 						", responseCode: {}",
-						api, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), regex_replace(response, regex("\n"), " "),
-						responseCode
+						api, url, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(),
+						regex_replace(response, regex("\n"), " "), responseCode
 					);
 
 					throw HTTPError(responseCode, errorMessage);
@@ -2553,12 +2558,13 @@ string CurlWrapper::httpPostPutFormData(
 				{
 					string errorMessage = std::format(
 						"{} failed, wrong return status"
+						", url: {}"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
 						", response: {}"
 						", responseCode: {}",
-						api, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), regex_replace(response, regex("\n"), " "),
-						responseCode
+						api, url, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(),
+						regex_replace(response, regex("\n"), " "), responseCode
 					);
 
 					throw HTTPError(responseCode, errorMessage);
@@ -2924,13 +2930,14 @@ string CurlWrapper::httpPostPutFileByFormData(
 				{
 					string errorMessage = std::format(
 						"{} failed, wrong return status"
+						", url: {}"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
 						", curlUploadFormData.formData: {}"
 						", curlUploadFormData.endOfFormData: {}"
 						", response: {}"
 						", responseCode: {}",
-						api, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), curlUploadFormData.formData,
+						api, url, referenceToLog, chrono::duration_cast<chrono::seconds>(end - start).count(), curlUploadFormData.formData,
 						curlUploadFormData.endOfFormData, regex_replace(response, regex("\n"), " "), responseCode
 					);
 
