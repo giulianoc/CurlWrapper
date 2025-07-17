@@ -237,8 +237,8 @@ class CurlWrapper
 
 	static void downloadFile(
 		string url, string destBinaryPathName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t), void *progressData,
-		long downloadChunkSizeInMegaBytes = 500, string referenceToLog = "", int maxRetryNumber = 0, bool resumeActive = false,
-		int secondsToWaitBeforeToRetry = 15
+		long downloadChunkSizeInMegaBytes = 500, string referenceToLog = "", long timeoutInSeconds = 120, int maxRetryNumber = 0,
+		bool resumeActive = false, int secondsToWaitBeforeToRetry = 15
 	);
 
 	static void ftpFile(

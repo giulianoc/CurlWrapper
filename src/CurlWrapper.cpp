@@ -3037,7 +3037,8 @@ string CurlWrapper::httpPostPutFileByFormData(
 
 void CurlWrapper::downloadFile(
 	string url, string destBinaryPathName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t), void *progressData,
-	long downloadChunkSizeInMegaBytes, string referenceToLog, int maxRetryNumber, bool resumeActive, int secondsToWaitBeforeToRetry
+	long downloadChunkSizeInMegaBytes, string referenceToLog, long timeoutInSeconds, int maxRetryNumber, bool resumeActive,
+	int secondsToWaitBeforeToRetry
 )
 {
 	string api = "downloadFile";
@@ -3147,6 +3148,8 @@ void CurlWrapper::downloadFile(
 
 					throw runtime_error(errorMessage);
 				}
+
+				curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeoutInSeconds);
 
 				// Set the writer callback to enable cURL to write result in a memory area
 				// request.setOpt(new curlpp::options::WriteStream(&mediaSourceFileStream));
