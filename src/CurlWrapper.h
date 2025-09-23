@@ -11,11 +11,11 @@
  * Created on March 29, 2018, 6:27 AM
  */
 
-#ifndef CURL_h
-#define CURL_h
+#pragma once
 
 #include <cstdint>
 #include <stdexcept>
+#include <string_view>
 #ifndef SPDLOG_ACTIVE_LEVEL
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #endif
@@ -42,21 +42,27 @@ using namespace nlohmann::literals;
 
 struct CurlException : public runtime_error
 {
-	CurlException(string message) : runtime_error(message) {};
-	virtual string type() { return "CurlException"; };
+	CurlException(const string &message) : runtime_error(message) {};
+	virtual ~CurlException() noexcept = default;
+
+	virtual string_view type() const noexcept { return "CurlException"; }
 };
 
 struct ServerNotReachable : public CurlException
 {
-	ServerNotReachable(string message) : CurlException(message) {};
-	virtual string type() { return "ServerNotReachable"; }
+	ServerNotReachable(const string &message) : CurlException(message) {};
+	~ServerNotReachable() noexcept override = default;
+
+	virtual string_view type() const noexcept override { return "ServerNotReachable"; }
 };
 
 struct HTTPError : public CurlException
 {
 	int16_t httpErrorCode;
-	HTTPError(int httpErrorCode, string message) : CurlException(message), httpErrorCode(httpErrorCode) {};
-	virtual string type() { return "HTTPError"; }
+	HTTPError(int16_t httpErrorCode, const string &message) : CurlException(message), httpErrorCode(httpErrorCode) {};
+	~HTTPError() noexcept override = default;
+
+	virtual string_view type() const noexcept override { return "HTTPError"; }
 };
 
 class CurlWrapper
@@ -289,5 +295,3 @@ class CurlWrapper
 		int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 	);
 };
-
-#endif
