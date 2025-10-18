@@ -32,28 +32,20 @@ using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 using namespace nlohmann::literals;
 
-#ifndef __FILEREF__
-#ifdef __APPLE__
-#define __FILEREF__ string("[") + string(__FILE__).substr(string(__FILE__).find_last_of("/") + 1) + ":" + to_string(__LINE__) + "] "
-#else
-#define __FILEREF__ string("[") + basename((char *)__FILE__) + ":" + to_string(__LINE__) + "] "
-#endif
-#endif
-
 struct CurlException : public runtime_error
 {
-	CurlException(const string &message) : runtime_error(message) {};
-	virtual ~CurlException() noexcept = default;
+	explicit CurlException(const string &message) : runtime_error(message) {};
+	~CurlException() noexcept override = default;
 
-	virtual string_view type() const noexcept { return "CurlException"; }
+	[[nodiscard]] virtual string_view type() const noexcept { return "CurlException"; }
 };
 
 struct ServerNotReachable : public CurlException
 {
-	ServerNotReachable(const string &message) : CurlException(message) {};
+	explicit ServerNotReachable(const string &message) : CurlException(message) {};
 	~ServerNotReachable() noexcept override = default;
 
-	virtual string_view type() const noexcept override { return "ServerNotReachable"; }
+	[[nodiscard]] virtual string_view type() const noexcept override { return "ServerNotReachable"; }
 };
 
 struct HTTPError : public CurlException
@@ -62,7 +54,7 @@ struct HTTPError : public CurlException
 	HTTPError(int16_t httpErrorCode, const string &message) : CurlException(message), httpErrorCode(httpErrorCode) {};
 	~HTTPError() noexcept override = default;
 
-	virtual string_view type() const noexcept override { return "HTTPError"; }
+	[[nodiscard]] string_view type() const noexcept override { return "HTTPError"; }
 };
 
 class CurlWrapper
@@ -117,127 +109,129 @@ class CurlWrapper
 	static string bearerAuthorization(const string &bearerToken);
 
 	static void httpGetBinary(
-		string url, long timeoutInSeconds, string authorization, vector<string> otherHeaders, string referenceToLog, int maxRetryNumber,
+		string url, long timeoutInSeconds, string authorization, const vector<string>& otherHeaders, string referenceToLog, int maxRetryNumber,
 		int secondsToWaitBeforeToRetry, vector<uint8_t> &binary
 	);
 
 	static string httpGet(
-		string url, long timeoutInSeconds, string authorization = "", vector<string> otherHeaders = vector<string>(), string referenceToLog = "",
+		const string &url, long timeoutInSeconds, const string &authorization = "", const vector<string> &otherHeaders = vector<string>(),
+		const string &referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
 	);
 
 	static json httpGetJson(
-		string url, long timeoutInSeconds, string authorization = "", vector<string> otherHeaders = vector<string>(), string referenceToLog = "",
+		const string& url, long timeoutInSeconds, const string& authorization = "", const vector<string>& otherHeaders = vector<string>(), const string& referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, bool outputCompressed = false
 	);
 
 	static string httpDelete(
-		string url, long timeoutInSeconds, string authorization, vector<string> otherHeaders = vector<string>(), string referenceToLog = "",
+		string url, long timeoutInSeconds, string authorization, const vector<string>& otherHeaders = vector<string>(), string referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
 	);
 
 	static string httpPostString(
-		string url, long timeoutInSeconds, string authorization, string body,
-		string contentType, // i.e.: application/json
-		vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+		const string& url, long timeoutInSeconds, const string& authorization, const string& body,
+		const string& contentType, // i.e.: application/json
+		const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
 	);
 
 	static string httpPutString(
-		string url, long timeoutInSeconds, string authorization, string body,
-		string contentType, // i.e.: application/json
-		vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+		const string& url, long timeoutInSeconds, const string& authorization, const string &body,
+		const string& contentType, // i.e.: application/json
+		const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
 	);
 
 	static pair<string, string> httpPostString(
-		string url, long timeoutInSeconds, string authorization, string body, string contentType = "application/json",
-		vector<string> otherHeaders = vector<string>(), string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
+		const string &url, long timeoutInSeconds, const string &authorization, const string& body, const string &contentType = "application/json",
+		const vector<string>& otherHeaders = vector<string>(), const string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
 	);
 
 	static pair<string, string> httpPutString(
-		string url, long timeoutInSeconds, string authorization, string body, string contentType = "application/json",
-		vector<string> otherHeaders = vector<string>(), string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
+		const string &url, long timeoutInSeconds, const string &authorization, const string& body, const string &contentType = "application/json",
+		const vector<string>& otherHeaders = vector<string>(), const string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
 	);
 
 	static json httpPostStringAndGetJson(
-		string url, long timeoutInSeconds, string authorization, string body, string contentType = "application/json",
-		vector<string> otherHeaders = vector<string>(), string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
+		const string& url, long timeoutInSeconds, const string &authorization, const string &body, const string& contentType = "application/json",
+		const vector<string>& otherHeaders = vector<string>(), const string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		bool outputCompressed = false
 	);
 
 	static json httpPutStringAndGetJson(
-		string url, long timeoutInSeconds, string authorization, string body, string contentType = "application/json",
-		vector<string> otherHeaders = vector<string>(), string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
+		const string& url, long timeoutInSeconds, const string &authorization, const string &body, const string& contentType = "application/json",
+		const vector<string>& otherHeaders = vector<string>(), const string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		bool outputCompressed = false
 	);
 
 	static string httpPostFile(
-		string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string contentType = "",
-		string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1,
+		const string& url, long timeoutInSeconds, const string& authorization, const string& pathFileName,
+		uintmax_t fileSizeInBytes, const string& contentType = "",
+		const string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1,
 		int64_t contentRangeEnd_Excluded = -1
 	);
 
 	static string httpPutFile(
-		string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string contentType = "",
-		string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1,
+		string url, long timeoutInSeconds, const string &authorization, const string& pathFileName, int64_t fileSizeInBytes, const string& contentType = "",
+		const string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1,
 		int64_t contentRangeEnd_Excluded = -1
 	);
 
 	static json httpPostFileAndGetJson(
-		string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string referenceToLog = "",
+		string url, long timeoutInSeconds, const string& authorization, const string &pathFileName, int64_t fileSizeInBytes, const string& referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1
 	);
 
 	static json httpPutFileAndGetJson(
-		string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string referenceToLog = "",
+		const string &url, long timeoutInSeconds, const string& authorization, const string& pathFileName, int64_t fileSizeInBytes, const string& referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1
 	);
 
 	static string httpPostFileSplittingInChunks(
-		string url, long timeoutInSeconds, string authorization, string pathFileName, function<bool(int, int)> chunkCompleted,
-		string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
+		const string& url, long timeoutInSeconds, const string& authorization, const string &pathFileName, const function<bool(int, int)>& chunkCompleted,
+		const string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
 	);
 
 	static string httpPostFormData(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog = "", int maxRetryNumber = 0,
+		const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15
 	);
 
 	static string httpPutFormData(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog = "", int maxRetryNumber = 0,
+		const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15
 	);
 
 	static json httpPostFormDataAndGetJson(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog = "", int maxRetryNumber = 0,
+		const string &url, const vector<pair<string, string>>& formData, long timeoutInSeconds, const string& referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15
 	);
 
 	static json httpPutFormDataAndGetJson(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog = "", int maxRetryNumber = 0,
+		const string &url, const vector<pair<string, string>>& formData, long timeoutInSeconds, const string &referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15
 	);
 
 	static string httpPostFileByFormData(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes,
-		string mediaContentType, string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
+		const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &pathFileName, int64_t fileSizeInBytes,
+		const string &mediaContentType, const string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1
 	);
 
 	static string httpPutFileByFormData(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes,
-		string mediaContentType, string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
+		const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &pathFileName, int64_t fileSizeInBytes,
+		const string &mediaContentType, const string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1
 	);
 
 	static json httpPostFileByFormDataAndGetJson(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes,
-		string mediaContentType, string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
+		const string& url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string& pathFileName, int64_t fileSizeInBytes,
+		const string& mediaContentType, const string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1
 	);
 
 	static json httpPutFileByFormDataAndGetJson(
-		string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes,
-		string mediaContentType, string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
+		const string& url, const vector<pair<string, string>>& formData, long timeoutInSeconds, const string &pathFileName, int64_t fileSizeInBytes,
+		const string& mediaContentType, const string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1
 	);
 
@@ -248,50 +242,52 @@ class CurlWrapper
 	);
 
 	static void ftpFile(
-		string filePathName, string fileName, int64_t sizeInBytes, string ftpServer, int ftpPort, string ftpUserName, string ftpPassword,
-		string ftpRemoteDirectory, string ftpRemoteFileName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
+		string filePathName, const string& fileName, int64_t sizeInBytes, string ftpServer, int ftpPort, string ftpUserName, string ftpPassword,
+		string ftpRemoteDirectory, const string& ftpRemoteFileName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
 		void *progressData, string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
 	);
 
 	static void sendEmail(
-		string emailServerURL, string useName, string password, string from, string tosCommaSeparated, string ccsCommaSeparated, string subject,
+		string emailServerURL, const string& useName, const string& password, string from, string tosCommaSeparated, string ccsCommaSeparated, string subject,
 		vector<string> &emailBody, string contentType
 	);
 
   private:
 	static pair<string, string> httpPostPutString(
 		string url,
-		string requestType, // POST or PUT
-		long timeoutInSeconds, string authorization, string body,
+		const string& requestType, // POST or PUT
+		long timeoutInSeconds, string authorization, const string& body,
 		string contentType, // i.e.: application/json
-		vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+		const vector<string>& otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 	);
 
 	static void httpPostPutBinary(
-		string url,
-		string requestType, // POST or PUT
-		long timeoutInSeconds, string authorization, string body,
-		string contentType, // i.e.: application/json
-		vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, vector<uint8_t> &binary
+		const string& url,
+		const string& requestType, // POST or PUT
+		long timeoutInSeconds, const string& authorization, const string& body,
+		const string& contentType, // i.e.: application/json
+		const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber,
+		int secondsToWaitBeforeToRetry, vector<uint8_t> &binary
 	);
 
 	static string httpPostPutFile(
-		string url,
-		string requestType, // POST or PUT
-		long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string contentType, string referenceToLog,
+		const string& url,
+		const string& requestType, // POST or PUT
+		long timeoutInSeconds, const string& authorization, const string& pathFileName, int64_t fileSizeInBytes,
+		const string& contentType, const string& referenceToLog,
 		int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 	);
 
 	static string httpPostPutFormData(
-		string url, vector<pair<string, string>> formData,
-		string requestType, // POST or PUT
+		string url, const vector<pair<string, string>>& formData,
+		const string& requestType, // POST or PUT
 		long timeoutInSeconds, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 	);
 
 	static string httpPostPutFileByFormData(
-		string url, vector<pair<string, string>> formData,
-		string requestType, // POST or PUT
-		long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, string mediaContentType, string referenceToLog, int maxRetryNumber,
+		string url, const vector<pair<string, string>>& formData,
+		const string& requestType, // POST or PUT
+		long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, const string& mediaContentType, string referenceToLog, int maxRetryNumber,
 		int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 	);
 };

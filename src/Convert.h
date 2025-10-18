@@ -22,25 +22,16 @@
  with the authors.
 */
 
-#ifndef Convert_h
-#define Convert_h
+#pragma once
 
 #include <string>
 
 using namespace std;
 
-typedef class Convert
+class Convert
 {
 
-  private:
-	Convert(const Convert &);
-
-	Convert &operator=(const Convert &);
-
   public:
-	Convert();
-
-	~Convert();
 
 	static string base64_encode(const string &in);
 	static string base64_encode(const unsigned char *in, int length);
@@ -81,6 +72,4 @@ typedef class Convert
 	*/
 	static void base16ToString(const char *pSrcBase16Data, char *pDestStringData, unsigned long ulDestStringDataSize);
 
-} Convert_t, *Convert_p;
-
-#endif
+};

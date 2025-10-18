@@ -29,29 +29,6 @@
 #include <string.h>
 #include <vector>
 
-Convert::Convert(void) {}
-
-Convert::~Convert(void) {}
-
-Convert::Convert(const Convert &)
-
-{
-
-	assert(1 == 0);
-
-	// to do
-}
-
-Convert &Convert::operator=(const Convert &)
-
-{
-
-	assert(1 == 0);
-
-	// to do
-
-	return *this;
-}
 
 string Convert::base64_encode(const string &in)
 {

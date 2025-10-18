@@ -31,6 +31,7 @@
 
 #include <list>
 #include <stdexcept>
+#include <utility>
 
 namespace fs = std::filesystem;
 
@@ -44,7 +45,7 @@ void CurlWrapper::globalTerminate() { curl_global_cleanup(); }
 
 string CurlWrapper::basicAuthorization(const string &user, const string &password)
 {
-	if (user != "")
+	if (!user.empty())
 		return std::format("Basic {}", Convert::base64_encode(user + ":" + password));
 	else
 		return "";
@@ -52,7 +53,7 @@ string CurlWrapper::basicAuthorization(const string &user, const string &passwor
 
 string CurlWrapper::bearerAuthorization(const string &bearerToken)
 {
-	if (bearerToken != "")
+	if (!bearerToken.empty())
 		return std::format("Bearer {}", bearerToken);
 	else
 		return "";
@@ -104,7 +105,8 @@ string CurlWrapper::unescape(const string &url)
 }
 
 json CurlWrapper::httpGetJson(
-	string url, long timeoutInSeconds, string authorization, vector<string> otherHeaders, string referenceToLog, int maxRetryNumber,
+	const string& url, long timeoutInSeconds, const string& authorization, const vector<string>& otherHeaders,
+	const string& referenceToLog, int maxRetryNumber,
 	int secondsToWaitBeforeToRetry, bool outputCompressed
 )
 {
@@ -127,9 +129,9 @@ json CurlWrapper::httpGetJson(
 }
 
 string CurlWrapper::httpPostString(
-	string url, long timeoutInSeconds, string authorization, string body,
-	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+	const string& url, long timeoutInSeconds, const string& authorization, const string& body,
+	const string& contentType, // i.e.: application/json
+	const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
 )
 {
 	string requestType = "POST";
@@ -158,9 +160,9 @@ string CurlWrapper::httpPostString(
 }
 
 string CurlWrapper::httpPutString(
-	string url, long timeoutInSeconds, string authorization, string body,
-	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+	const string& url, long timeoutInSeconds, const string& authorization, const string &body,
+	const string& contentType, // i.e.: application/json
+	const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
 )
 {
 	string requestType = "PUT";
@@ -189,9 +191,9 @@ string CurlWrapper::httpPutString(
 }
 
 pair<string, string> CurlWrapper::httpPostString(
-	string url, long timeoutInSeconds, string authorization, string body,
-	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const string &url, long timeoutInSeconds, const string &authorization, const string& body,
+	const string &contentType, // i.e.: application/json
+	const vector<string>& otherHeaders, const string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	string requestType = "POST";
@@ -204,9 +206,9 @@ pair<string, string> CurlWrapper::httpPostString(
 }
 
 pair<string, string> CurlWrapper::httpPutString(
-	string url, long timeoutInSeconds, string authorization, string body,
-	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const string &url, long timeoutInSeconds, const string &authorization, const string& body,
+	const string &contentType, // i.e.: application/json
+	const vector<string>& otherHeaders, const string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	string requestType = "PUT";
@@ -219,9 +221,9 @@ pair<string, string> CurlWrapper::httpPutString(
 }
 
 json CurlWrapper::httpPostStringAndGetJson(
-	string url, long timeoutInSeconds, string authorization, string body,
-	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+	const string& url, long timeoutInSeconds, const string &authorization, const string &body,
+	const string& contentType, // i.e.: application/json
+	const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
 )
 {
 	string response = CurlWrapper::httpPostString(
@@ -234,9 +236,9 @@ json CurlWrapper::httpPostStringAndGetJson(
 }
 
 json CurlWrapper::httpPutStringAndGetJson(
-	string url, long timeoutInSeconds, string authorization, string body,
-	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+	const string& url, long timeoutInSeconds, const string &authorization, const string &body,
+	const string& contentType, // i.e.: application/json
+	const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
 )
 {
 	string response = CurlWrapper::httpPutString(
@@ -250,7 +252,8 @@ json CurlWrapper::httpPutStringAndGetJson(
 }
 
 string CurlWrapper::httpPostFile(
-	string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string contentType, string referenceToLog,
+	const string& url, long timeoutInSeconds, const string& authorization, const string& pathFileName,
+	uintmax_t fileSizeInBytes, const string& contentType, const string& referenceToLog,
 	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
@@ -263,7 +266,8 @@ string CurlWrapper::httpPostFile(
 }
 
 string CurlWrapper::httpPutFile(
-	string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string contentType, string referenceToLog,
+	string url, long timeoutInSeconds, const string &authorization, const string& pathFileName, int64_t fileSizeInBytes,
+	const string& contentType, const string& referenceToLog,
 	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
@@ -276,7 +280,8 @@ string CurlWrapper::httpPutFile(
 }
 
 json CurlWrapper::httpPostFileAndGetJson(
-	string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string referenceToLog, int maxRetryNumber,
+	string url, long timeoutInSeconds, const string& authorization, const string &pathFileName, int64_t fileSizeInBytes,
+	const string& referenceToLog, int maxRetryNumber,
 	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
@@ -291,7 +296,8 @@ json CurlWrapper::httpPostFileAndGetJson(
 }
 
 json CurlWrapper::httpPutFileAndGetJson(
-	string url, long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string referenceToLog, int maxRetryNumber,
+	const string &url, long timeoutInSeconds, const string& authorization, const string& pathFileName, int64_t fileSizeInBytes,
+	const string& referenceToLog, int maxRetryNumber,
 	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
@@ -306,11 +312,12 @@ json CurlWrapper::httpPutFileAndGetJson(
 }
 
 string CurlWrapper::httpPostFileSplittingInChunks(
-	string url, long timeoutInSeconds, string authorization, string pathFileName, function<bool(int, int)> chunkCompleted, string referenceToLog,
+	const string& url, long timeoutInSeconds, const string& authorization, const string &pathFileName,
+	const function<bool(int, int)>& chunkCompleted, const string& referenceToLog,
 	int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
-	int64_t fileSizeInBytes = fs::file_size(pathFileName);
+	uintmax_t fileSizeInBytes = fs::file_size(pathFileName);
 
 	int64_t chunkSize = 100 * 1000 * 1000;
 
@@ -319,7 +326,7 @@ string CurlWrapper::httpPostFileSplittingInChunks(
 			url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "", referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry
 		);
 
-	int chunksNumber = fileSizeInBytes / chunkSize;
+	uint chunksNumber = fileSizeInBytes / chunkSize;
 	if (fileSizeInBytes % chunkSize != 0)
 		chunksNumber++;
 
@@ -346,7 +353,7 @@ string CurlWrapper::httpPostFileSplittingInChunks(
 }
 
 string CurlWrapper::httpPostFormData(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog, int maxRetryNumber,
+	const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &referenceToLog, int maxRetryNumber,
 	int secondsToWaitBeforeToRetry
 )
 {
@@ -356,8 +363,8 @@ string CurlWrapper::httpPostFormData(
 }
 
 string CurlWrapper::httpPutFormData(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry
+	const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &referenceToLog,
+	int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	string requestType = "PUT";
@@ -366,8 +373,8 @@ string CurlWrapper::httpPutFormData(
 }
 
 json CurlWrapper::httpPostFormDataAndGetJson(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry
+	const string &url, const vector<pair<string, string>>& formData, long timeoutInSeconds, const string& referenceToLog,
+	int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	string response = CurlWrapper::httpPostFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
@@ -378,8 +385,8 @@ json CurlWrapper::httpPostFormDataAndGetJson(
 }
 
 json CurlWrapper::httpPutFormDataAndGetJson(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry
+	const string &url, const vector<pair<string, string>>& formData, long timeoutInSeconds, const string &referenceToLog,
+	int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	string response = CurlWrapper::httpPutFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
@@ -390,8 +397,10 @@ json CurlWrapper::httpPutFormDataAndGetJson(
 }
 
 string CurlWrapper::httpPostFileByFormData(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, string mediaContentType,
-	string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &pathFileName,
+	int64_t fileSizeInBytes,
+	const string &mediaContentType, const string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
 	string requestType = "POST";
@@ -403,8 +412,10 @@ string CurlWrapper::httpPostFileByFormData(
 }
 
 string CurlWrapper::httpPutFileByFormData(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, string mediaContentType,
-	string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	const string &url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string &pathFileName,
+	int64_t fileSizeInBytes,
+	const string &mediaContentType, const string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
 	string requestType = "PUT";
@@ -416,8 +427,10 @@ string CurlWrapper::httpPutFileByFormData(
 }
 
 json CurlWrapper::httpPostFileByFormDataAndGetJson(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, string mediaContentType,
-	string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	const string& url, const vector<pair<string, string>> &formData, long timeoutInSeconds, const string& pathFileName,
+	int64_t fileSizeInBytes, const string& mediaContentType,
+	const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart,
+	int64_t contentRangeEnd_Excluded
 )
 {
 	string response = CurlWrapper::httpPostFileByFormData(
@@ -431,8 +444,10 @@ json CurlWrapper::httpPostFileByFormDataAndGetJson(
 }
 
 json CurlWrapper::httpPutFileByFormDataAndGetJson(
-	string url, vector<pair<string, string>> formData, long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, string mediaContentType,
-	string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	const string& url, const vector<pair<string, string>>& formData, long timeoutInSeconds, const string &pathFileName,
+	int64_t fileSizeInBytes, const string& mediaContentType,
+	const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart,
+	int64_t contentRangeEnd_Excluded
 )
 {
 	string response = CurlWrapper::httpPutFileByFormData(
@@ -710,7 +725,7 @@ size_t curlWriteBytesCallback(char *ptr, size_t size, size_t nmemb, void *f)
 {
 	try
 	{
-		vector<uint8_t> *buffer = (vector<uint8_t> *)f;
+		auto *buffer = (vector<uint8_t> *)f;
 
 		buffer->insert(buffer->end(), ptr, ptr + (size * nmemb));
 
@@ -733,8 +748,8 @@ size_t curlWriteBytesCallback(char *ptr, size_t size, size_t nmemb, void *f)
 };
 
 string CurlWrapper::httpGet(
-	string url, long timeoutInSeconds, string authorization, vector<string> otherHeaders, string referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry
+	const string &url, long timeoutInSeconds, const string &authorization, const vector<string> &otherHeaders,
+	const string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	vector<uint8_t> binary;
@@ -751,8 +766,8 @@ string CurlWrapper::httpGet(
 }
 
 void CurlWrapper::httpGetBinary(
-	string url, long timeoutInSeconds, string authorization, vector<string> otherHeaders, string referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry, vector<uint8_t> &binary
+	string url, long timeoutInSeconds, string authorization, const vector<string>& otherHeaders, string referenceToLog,
+	int maxRetryNumber, int secondsToWaitBeforeToRetry, vector<uint8_t> &binary
 )
 {
 	string api = "httpGet";
@@ -1044,8 +1059,8 @@ void CurlWrapper::httpGetBinary(
 }
 
 string CurlWrapper::httpDelete(
-	string url, long timeoutInSeconds, string authorization, vector<string> otherHeaders, string referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry
+	string url, long timeoutInSeconds, string authorization, const vector<string>& otherHeaders,
+	string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	string api = "httpDelete";
@@ -1174,10 +1189,10 @@ string CurlWrapper::httpDelete(
 				request.setOpt(new curlpp::options::HttpHeader(headers));
 				*/
 				{
-					if (authorization != "")
+					if (!authorization.empty())
 						headersList = curl_slist_append(headersList, std::format("Authorization: {}", authorization).c_str());
 
-					for (string header : otherHeaders)
+					for (const string& header : otherHeaders)
 						headersList = curl_slist_append(headersList, header.c_str());
 
 					curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headersList);
@@ -1345,10 +1360,10 @@ string CurlWrapper::httpDelete(
 
 pair<string, string> CurlWrapper::httpPostPutString(
 	string url,
-	string requestType, // POST or PUT
-	long timeoutInSeconds, string authorization, string body,
+	const string& requestType, // POST or PUT
+	long timeoutInSeconds, string authorization, const string& body,
 	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const vector<string>& otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
 	string api = "httpPostPutString";
@@ -1681,11 +1696,11 @@ pair<string, string> CurlWrapper::httpPostPutString(
 }
 
 void CurlWrapper::httpPostPutBinary(
-	string url,
-	string requestType, // POST or PUT
-	long timeoutInSeconds, string authorization, string body,
-	string contentType, // i.e.: application/json
-	vector<string> otherHeaders, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, vector<uint8_t> &binary
+	const string& url,
+	const string& requestType, // POST or PUT
+	long timeoutInSeconds, const string& authorization, const string& body,
+	const string& contentType, // i.e.: application/json
+	const vector<string>& otherHeaders, const string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, vector<uint8_t> &binary
 )
 {
 	string api = "httpPostPutBinary";
@@ -1985,9 +2000,10 @@ void CurlWrapper::httpPostPutBinary(
 }
 
 string CurlWrapper::httpPostPutFile(
-	string url,
-	string requestType, // POST or PUT
-	long timeoutInSeconds, string authorization, string pathFileName, int64_t fileSizeInBytes, string contentType, string referenceToLog,
+	const string& url,
+	const string& requestType, // POST or PUT
+	long timeoutInSeconds, const string& authorization, const string& pathFileName, int64_t fileSizeInBytes,
+	const string& contentType, const string& referenceToLog,
 	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
@@ -2358,8 +2374,8 @@ string CurlWrapper::httpPostPutFile(
 }
 
 string CurlWrapper::httpPostPutFormData(
-	string url, vector<pair<string, string>> formData,
-	string requestType, // POST or PUT
+	string url, const vector<pair<string, string>>& formData,
+	const string& requestType, // POST or PUT
 	long timeoutInSeconds, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
@@ -2662,9 +2678,9 @@ string CurlWrapper::httpPostPutFormData(
 }
 
 string CurlWrapper::httpPostPutFileByFormData(
-	string url, vector<pair<string, string>> formData,
-	string requestType, // POST or PUT
-	long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, string mediaContentType, string referenceToLog, int maxRetryNumber,
+	string url, const vector<pair<string, string>>& formData,
+	const string& requestType, // POST or PUT
+	long timeoutInSeconds, string pathFileName, int64_t fileSizeInBytes, const string& mediaContentType, string referenceToLog, int maxRetryNumber,
 	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
 )
 {
@@ -3355,8 +3371,8 @@ void CurlWrapper::downloadFile(
 }
 
 void CurlWrapper::ftpFile(
-	string filePathName, string fileName, int64_t sizeInBytes, string ftpServer, int ftpPort, string ftpUserName, string ftpPassword,
-	string ftpRemoteDirectory, string ftpRemoteFileName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
+	string filePathName, const string& fileName, int64_t sizeInBytes, string ftpServer, int ftpPort, string ftpUserName, string ftpPassword,
+	string ftpRemoteDirectory, const string& ftpRemoteFileName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
 	void *progressData, string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
 )
 {
@@ -3625,9 +3641,9 @@ size_t emailPayloadFeed(void *ptr, size_t size, size_t nmemb, void *f)
 
 void CurlWrapper::sendEmail(
 	string emailServerURL, // i.e.: smtps://xxx.xxx.xxx:465
-	string userName,	   // i.e.: xxx@xxx.com
+	const string& userName,	   // i.e.: xxx@xxx.com
 	// 2023-02-18: mi è sembrato che il provider blocca l'email se username e from sono diversi!!!
-	string password, string from, string tosCommaSeparated, string ccsCommaSeparated, string subject, vector<string> &emailBody,
+	const string& password, string from, string tosCommaSeparated, string ccsCommaSeparated, string subject, vector<string> &emailBody,
 	string contentType // i.e.: text/html; charset=\"UTF-8\"
 )
 {
