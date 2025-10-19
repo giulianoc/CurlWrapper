@@ -44,7 +44,7 @@ endif()
 add_library (CurlWrapper SHARED ${SOURCES} ${HEADERS})
 
 if(APPLE)
-  target_link_libraries(CurlWrapper JSONUtils)
+	target_link_libraries(CurlWrapper JSONUtils)
 	target_link_libraries(CurlWrapper curl)
 	target_link_libraries(CurlWrapper z)
 endif()
