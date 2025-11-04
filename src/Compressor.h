@@ -22,8 +22,7 @@
  with the authors.
 */
 
-#ifndef Compressor_h
-#define Compressor_h
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -38,10 +37,8 @@ class Compressor
   public:
 	/** Compress a STL string using zlib with given compression level and return
 	 * the binary data. */
-	static string compress_string(const string &str, int compressionlevel = Z_DEFAULT_COMPRESSION);
+	static string compress_string(const string_view &toBeCompressed, int compressionlevel = Z_DEFAULT_COMPRESSION);
 	// int compressionlevel = Z_BEST_COMPRESSION);
 
-	static string decompress_string(const vector<uint8_t> &str);
+	static string decompress_string(const vector<uint8_t> &compressed);
 };
-
-#endif

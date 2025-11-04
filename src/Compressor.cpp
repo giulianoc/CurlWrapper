@@ -35,10 +35,9 @@
 //			where a.zip is the output of the CatraMMS API
 // Gzip is deflate plus a few headers and a check sum
 // https://dev.to/biellls/compression-clearing-the-confusion-on-zip-gzip-zlib-and-deflate-15g1
-string Compressor::compress_string(const string &toBeCompressed, int compressionlevel)
+string Compressor::compress_string(const string_view &toBeCompressed, int compressionlevel)
 {
-	z_stream zStream; // z_stream is zlib's control structure
-	memset(&zStream, 0, sizeof(zStream));
+	z_stream zStream = {}; // z_stream is zlib's control structure
 
 	if (deflateInit(&zStream, compressionlevel) != Z_OK)
 		throw(runtime_error("deflateInit failed while compressing."));
@@ -80,8 +79,7 @@ string Compressor::compress_string(const string &toBeCompressed, int compression
 /** Decompress an STL string using zlib and return the original data. */
 string Compressor::decompress_string(const vector<uint8_t> &compressed)
 {
-	z_stream zStream; // z_stream is zlib's control structure
-	memset(&zStream, 0, sizeof(zStream));
+	z_stream zStream = {}; // z_stream is zlib's control structure
 
 	if (inflateInit(&zStream) != Z_OK)
 		throw(runtime_error("inflateInit failed while decompressing."));
