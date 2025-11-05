@@ -13,13 +13,12 @@
 
 #pragma once
 
-#include <cstdint>
 #include <stdexcept>
 #include <string_view>
 #ifndef SPDLOG_ACTIVE_LEVEL
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #endif
-#include "nlohmann/json.hpp"
+#include "JSONUtils.h"
 #include "spdlog/spdlog.h"
 #include <curl/curl.h>
 #include <deque>
@@ -28,39 +27,35 @@
 
 using namespace std;
 
-using json = nlohmann::json;
-using ordered_json = nlohmann::ordered_json;
-using namespace nlohmann::literals;
-
-struct CurlException : public runtime_error
-{
-	explicit CurlException(const string &message) : runtime_error(message) {};
-	~CurlException() noexcept override = default;
-
-	[[nodiscard]] virtual string_view type() const noexcept { return "CurlException"; }
-};
-
-struct ServerNotReachable : public CurlException
-{
-	explicit ServerNotReachable(const string &message) : CurlException(message) {};
-	~ServerNotReachable() noexcept override = default;
-
-	[[nodiscard]] virtual string_view type() const noexcept override { return "ServerNotReachable"; }
-};
-
-struct HTTPError : public CurlException
-{
-	int16_t httpErrorCode;
-	HTTPError(int16_t httpErrorCode, const string &message) : CurlException(message), httpErrorCode(httpErrorCode) {};
-	~HTTPError() noexcept override = default;
-
-	[[nodiscard]] string_view type() const noexcept override { return "HTTPError"; }
-};
 
 class CurlWrapper
 {
-
   public:
+	struct CurlException : public runtime_error
+	{
+		explicit CurlException(const string &message) : runtime_error(message) {};
+		~CurlException() noexcept override = default;
+
+		[[nodiscard]] virtual string_view type() const noexcept { return "CurlException"; }
+	};
+
+	struct ServerNotReachable final : public CurlException
+	{
+		explicit ServerNotReachable(const string &message) : CurlException(message) {};
+		~ServerNotReachable() noexcept override = default;
+
+		[[nodiscard]] virtual string_view type() const noexcept override { return "ServerNotReachable"; }
+	};
+
+	struct HTTPError final : public CurlException
+	{
+		int16_t httpErrorCode;
+		HTTPError(int16_t httpErrorCode, const string &message) : CurlException(message), httpErrorCode(httpErrorCode) {};
+		~HTTPError() noexcept override = default;
+
+		[[nodiscard]] string_view type() const noexcept override { return "HTTPError"; }
+	};
+
 	struct CurlDownloadData
 	{
 		string referenceToLog;
