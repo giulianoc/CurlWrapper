@@ -3344,11 +3344,12 @@ void CurlWrapper::downloadFile(
 					"{} retry"
 					"{}"
 					", url: {}"
+					", timeoutInSeconds: {}"
 					", exception: {}"
 					", retryNumber: {}"
 					", maxRetryNumber: {}"
 					", secondsToWaitBeforeToRetry: {}",
-					api, referenceToLog, url, e.what(), retryNumber, maxRetryNumber, secondsToWaitBeforeToRetry * (retryNumber + 1)
+					api, referenceToLog, url, timeoutInSeconds, e.what(), retryNumber, maxRetryNumber, secondsToWaitBeforeToRetry * (retryNumber + 1)
 				);
 				this_thread::sleep_for(chrono::seconds(secondsToWaitBeforeToRetry * (retryNumber + 1)));
 			}
@@ -3358,8 +3359,9 @@ void CurlWrapper::downloadFile(
 					"{} failed"
 					"{}"
 					", url: {}"
+					", timeoutInSeconds: {}"
 					", exception: {}",
-					api, referenceToLog, url, e.what()
+					api, referenceToLog, url, timeoutInSeconds, e.what()
 				);
 
 				throw;
