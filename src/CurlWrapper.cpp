@@ -317,14 +317,14 @@ string CurlWrapper::httpPostFileSplittingInChunks(
 {
 	uintmax_t fileSizeInBytes = fs::file_size(pathFileName);
 
-	int64_t chunkSize = 100 * 1000 * 1000;
+	constexpr uint64_t chunkSize = 100ULL * 1000ULL * 1000ULL; // 100 MB
 
 	if (fileSizeInBytes <= chunkSize)
 		return httpPostFile(
 			url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "", referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry
 		);
 
-	uint chunksNumber = fileSizeInBytes / chunkSize;
+	uintmax_t chunksNumber = fileSizeInBytes / chunkSize;
 	if (fileSizeInBytes % chunkSize != 0)
 		chunksNumber++;
 
