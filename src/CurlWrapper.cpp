@@ -115,14 +115,14 @@ json CurlWrapper::httpGetJson(
 		CurlWrapper::httpGetBinary(
 			url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, binary
 		);
-		return JSONUtils::toJson(Compressor::decompress_string(binary));
+		return JSONUtils::toJson<json>(Compressor::decompress_string(binary));
 	}
 	else
 #endif
 	{
-		string response =
+		const string response =
 			CurlWrapper::httpGet(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
-		return JSONUtils::toJson(response);
+		return JSONUtils::toJson<json>(response);
 	}
 }
 
@@ -228,7 +228,7 @@ json CurlWrapper::httpPostStringAndGetJson(
 		url, timeoutInSeconds, authorization, body, contentType, otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
 		outputCompressed
 	);
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
@@ -244,7 +244,7 @@ json CurlWrapper::httpPutStringAndGetJson(
 		outputCompressed
 	);
 
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
@@ -288,7 +288,7 @@ json CurlWrapper::httpPostFileAndGetJson(
 		contentRangeStart, contentRangeEnd_Excluded
 	);
 
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
@@ -304,7 +304,7 @@ json CurlWrapper::httpPutFileAndGetJson(
 		contentRangeStart, contentRangeEnd_Excluded
 	);
 
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
@@ -377,7 +377,7 @@ json CurlWrapper::httpPostFormDataAndGetJson(
 {
 	string response = CurlWrapper::httpPostFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
 
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
@@ -389,7 +389,7 @@ json CurlWrapper::httpPutFormDataAndGetJson(
 {
 	string response = CurlWrapper::httpPutFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
 
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
@@ -436,7 +436,7 @@ json CurlWrapper::httpPostFileByFormDataAndGetJson(
 		contentRangeStart, contentRangeEnd_Excluded
 	);
 
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
@@ -453,7 +453,7 @@ json CurlWrapper::httpPutFileByFormDataAndGetJson(
 		contentRangeStart, contentRangeEnd_Excluded
 	);
 
-	json jsonRoot = JSONUtils::toJson(response);
+	json jsonRoot = JSONUtils::toJson<json>(response);
 
 	return jsonRoot;
 }
