@@ -29,16 +29,14 @@
 #include <vector>
 #include <zlib.h>
 
-using namespace std;
-
 class Compressor
 {
 
   public:
 	/** Compress a STL string using zlib with given compression level and return
 	 * the binary data. */
-	static string compress_string(const string_view &toBeCompressed, int compressionlevel = Z_DEFAULT_COMPRESSION);
+	static std::string compress_string(const std::string_view &toBeCompressed, int compressionlevel = Z_DEFAULT_COMPRESSION);
 	// int compressionlevel = Z_BEST_COMPRESSION);
 
-	static string decompress_string(const vector<uint8_t> &compressed);
+	static std::string decompress_string(const std::vector<uint8_t> &compressed);
 };

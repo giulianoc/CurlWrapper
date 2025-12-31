@@ -35,19 +35,19 @@
 //			where a.zip is the output of the CatraMMS API
 // Gzip is deflate plus a few headers and a check sum
 // https://dev.to/biellls/compression-clearing-the-confusion-on-zip-gzip-zlib-and-deflate-15g1
-string Compressor::compress_string(const string_view &toBeCompressed, int compressionlevel)
+std::string Compressor::compress_string(const std::string_view &toBeCompressed, int compressionlevel)
 {
 	z_stream zStream = {}; // z_stream is zlib's control structure
 
 	if (deflateInit(&zStream, compressionlevel) != Z_OK)
-		throw(runtime_error("deflateInit failed while compressing."));
+		throw(std::runtime_error("deflateInit failed while compressing."));
 
 	zStream.next_in = (Bytef *)toBeCompressed.data();
 	zStream.avail_in = toBeCompressed.size(); // set the z_stream's input
 
 	int ret;
 	char outBuffer[32768];
-	string outString;
+	std::string outString;
 
 	// retrieve the compressed bytes blockwise
 	do
@@ -68,28 +68,28 @@ string Compressor::compress_string(const string_view &toBeCompressed, int compre
 
 	if (ret != Z_STREAM_END)
 	{ // an error occurred that was not EOF
-		ostringstream oss;
+		std::ostringstream oss;
 		oss << "Exception during zlib compression: (" << ret << ") " << zStream.msg;
-		throw(runtime_error(oss.str()));
+		throw(std::runtime_error(oss.str()));
 	}
 
 	return outString;
 }
 
 /** Decompress an STL string using zlib and return the original data. */
-string Compressor::decompress_string(const vector<uint8_t> &compressed)
+std::string Compressor::decompress_string(const std::vector<uint8_t> &compressed)
 {
 	z_stream zStream = {}; // z_stream is zlib's control structure
 
 	if (inflateInit(&zStream) != Z_OK)
-		throw(runtime_error("inflateInit failed while decompressing."));
+		throw(std::runtime_error("inflateInit failed while decompressing."));
 
 	zStream.next_in = (Bytef *)compressed.data();
 	zStream.avail_in = compressed.size();
 
 	int ret;
 	char outBuffer[32768];
-	string outString;
+	std::string outString;
 
 	// get the decompressed bytes blockwise using repeated calls to inflate
 	do
@@ -110,9 +110,9 @@ string Compressor::decompress_string(const vector<uint8_t> &compressed)
 
 	if (ret != Z_STREAM_END)
 	{ // an error occurred that was not EOF
-		ostringstream oss;
+		std::ostringstream oss;
 		oss << "Exception during zlib decompression: (" << ret << ") " << zStream.msg;
-		throw(runtime_error(oss.str()));
+		throw(std::runtime_error(oss.str()));
 	}
 
 	return outString;
