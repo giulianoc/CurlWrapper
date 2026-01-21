@@ -467,7 +467,7 @@ size_t curlDownloadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 		(curlDownloadData->mediaSourceFileStream).open(curlDownloadData->destBinaryPathName, std::ofstream::binary | std::ofstream::trunc);
 		if (!curlDownloadData->mediaSourceFileStream)
 		{
-			SPDLOG_ERROR(
+			LOG_ERROR(
 				"open file failed"
 				"{}"
 				", destBinaryPathName: {}",
@@ -478,7 +478,7 @@ size_t curlDownloadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 		}
 		curlDownloadData->currentChunkNumber += 1;
 
-		SPDLOG_DEBUG(
+		LOG_DEBUG(
 			"Opening binary file"
 			"{}"
 			", curlDownloadData -> destBinaryPathName: {}"
@@ -499,7 +499,7 @@ size_t curlDownloadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 		(curlDownloadData->mediaSourceFileStream).open(curlDownloadData->destBinaryPathName, std::ofstream::binary | std::ofstream::app);
 		if (!curlDownloadData->mediaSourceFileStream)
 		{
-			SPDLOG_ERROR(
+			LOG_ERROR(
 				"open file failed"
 				"{}"
 				", destBinaryPathName: {}",
@@ -510,7 +510,7 @@ size_t curlDownloadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 		}
 		curlDownloadData->currentChunkNumber += 1;
 
-		SPDLOG_DEBUG(
+		LOG_DEBUG(
 			"Opening binary file"
 			"{}"
 			", curlDownloadData->destBinaryPathName: {}"
@@ -574,7 +574,7 @@ size_t curlUploadFormDataCallback(char *ptr, size_t size, size_t nmemb, void *f)
 	{
 		if (curlUploadFormData->formData.size() > size * nmemb)
 		{
-			SPDLOG_ERROR(
+			LOG_ERROR(
 				"Not enougth memory!!!"
 				", curlUploadFormData->formDataSent: {}"
 				", curlUploadFormData->formData: {}"
@@ -617,7 +617,7 @@ size_t curlUploadFormDataCallback(char *ptr, size_t size, size_t nmemb, void *f)
 		{
 			if (curlUploadFormData->endOfFormData.size() > size * nmemb)
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"Not enougth memory!!!"
 					", curlUploadFormData->formDataSent: {}"
 					", curlUploadFormData->formData: {}"
@@ -656,7 +656,7 @@ size_t curlUploadFormDataCallback(char *ptr, size_t size, size_t nmemb, void *f)
 		}
 		else
 		{
-			SPDLOG_ERROR(
+			LOG_ERROR(
 				"This scenario should never happen"
 				", curlUploadFormData->formDataSent: {}"
 				", curlUploadFormData->formData: {}"
@@ -705,7 +705,7 @@ size_t curlWriteStringCallback(char *ptr, size_t size, size_t nmemb, void *f)
 	}
 	catch (std::exception &e)
 	{
-		SPDLOG_ERROR(
+		LOG_ERROR(
 			"curlWriteStringCallback failed"
 			", size: {}"
 			", nmemb: {}"
@@ -731,7 +731,7 @@ size_t curlWriteBytesCallback(char *ptr, size_t size, size_t nmemb, void *f)
 	}
 	catch (std::exception &e)
 	{
-		SPDLOG_ERROR(
+		LOG_ERROR(
 			"curlWriteBytesCallback failed"
 			", size: {}"
 			", nmemb: {}"
@@ -786,7 +786,7 @@ void CurlWrapper::httpGetBinary(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -899,7 +899,7 @@ void CurlWrapper::httpGetBinary(
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&binary);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteBytesCallback);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -926,7 +926,7 @@ void CurlWrapper::httpGetBinary(
 						", url: {}",
 						api, static_cast<int>(curlCode), curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
@@ -941,7 +941,7 @@ void CurlWrapper::httpGetBinary(
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
 				if (responseCode == 200)
 				{
-					SPDLOG_DEBUG(
+					LOG_DEBUG(
 						"{} success"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@",
@@ -991,7 +991,7 @@ void CurlWrapper::httpGetBinary(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (headersList)
 			{
@@ -1013,7 +1013,7 @@ void CurlWrapper::httpGetBinary(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -1028,7 +1028,7 @@ void CurlWrapper::httpGetBinary(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -1084,7 +1084,7 @@ std::string CurlWrapper::httpDelete(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -1200,7 +1200,7 @@ std::string CurlWrapper::httpDelete(
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteStringCallback);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -1226,7 +1226,7 @@ std::string CurlWrapper::httpDelete(
 						", url: {}",
 						api, curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
@@ -1241,7 +1241,7 @@ std::string CurlWrapper::httpDelete(
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
 				if (responseCode == 200)
 				{
-					SPDLOG_DEBUG(
+					LOG_DEBUG(
 						"{} success"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
@@ -1290,7 +1290,7 @@ std::string CurlWrapper::httpDelete(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (headersList)
 			{
@@ -1312,7 +1312,7 @@ std::string CurlWrapper::httpDelete(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -1327,7 +1327,7 @@ std::string CurlWrapper::httpDelete(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -1386,7 +1386,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -1518,7 +1518,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 				// request.setOpt(new curlpp::options::Header(true));
 				curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -1541,7 +1541,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 						", url: {}",
 						api, curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
@@ -1552,7 +1552,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 				if (responseCode == 200 || responseCode == 201 || responseCode == 308 // permanently removed/redirect
 				)
 				{
-					SPDLOG_DEBUG(
+					LOG_DEBUG(
 						"{} success"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
@@ -1590,7 +1590,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 						", responseHeaderAndBody: {}",
 						referenceToLog, url, responseHeaderAndBody
 					);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -1627,7 +1627,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (headersList)
 			{
@@ -1649,7 +1649,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -1664,7 +1664,7 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -1720,7 +1720,7 @@ void CurlWrapper::httpPostPutBinary(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -1852,7 +1852,7 @@ void CurlWrapper::httpPostPutBinary(
 				// request.setOpt(new curlpp::options::Header(true));
 				// curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -1875,7 +1875,7 @@ void CurlWrapper::httpPostPutBinary(
 						", url: {}",
 						api, curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
@@ -1886,7 +1886,7 @@ void CurlWrapper::httpPostPutBinary(
 				if (responseCode == 200 || responseCode == 201 || responseCode == 308 // permanently removed/redirect
 				)
 				{
-					SPDLOG_DEBUG(
+					LOG_DEBUG(
 						"{} success"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@",
@@ -1934,7 +1934,7 @@ void CurlWrapper::httpPostPutBinary(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (headersList)
 			{
@@ -1956,7 +1956,7 @@ void CurlWrapper::httpPostPutBinary(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -1971,7 +1971,7 @@ void CurlWrapper::httpPostPutBinary(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -2031,7 +2031,7 @@ std::string CurlWrapper::httpPostPutFile(
 						", pathFileName: {}",
 						referenceToLog, pathFileName
 					);
-					SPDLOG_ERROR(message);
+					LOG_ERROR(message);
 
 					throw std::runtime_error(message);
 				}
@@ -2050,7 +2050,7 @@ std::string CurlWrapper::httpPostPutFile(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -2217,7 +2217,7 @@ std::string CurlWrapper::httpPostPutFile(
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteStringCallback);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -2239,7 +2239,7 @@ std::string CurlWrapper::httpPostPutFile(
 						", url: {}",
 						api, curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
@@ -2256,7 +2256,7 @@ std::string CurlWrapper::httpPostPutFile(
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
 				if (responseCode == 200 || responseCode == 201)
 				{
-					SPDLOG_DEBUG(
+					LOG_DEBUG(
 						"{} success"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
@@ -2305,7 +2305,7 @@ std::string CurlWrapper::httpPostPutFile(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (headersList)
 			{
@@ -2327,7 +2327,7 @@ std::string CurlWrapper::httpPostPutFile(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -2342,7 +2342,7 @@ std::string CurlWrapper::httpPostPutFile(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -2421,7 +2421,7 @@ std::string CurlWrapper::httpPostPutFormData(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -2525,7 +2525,7 @@ std::string CurlWrapper::httpPostPutFormData(
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteStringCallback);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -2545,7 +2545,7 @@ std::string CurlWrapper::httpPostPutFormData(
 						", url: {}",
 						api, curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
@@ -2560,7 +2560,7 @@ std::string CurlWrapper::httpPostPutFormData(
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
 				if (responseCode == 200 || responseCode == 201)
 				{
-					SPDLOG_DEBUG(
+					LOG_DEBUG(
 						"{} success"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
@@ -2609,7 +2609,7 @@ std::string CurlWrapper::httpPostPutFormData(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (headersList)
 			{
@@ -2631,7 +2631,7 @@ std::string CurlWrapper::httpPostPutFormData(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -2646,7 +2646,7 @@ std::string CurlWrapper::httpPostPutFormData(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -2708,7 +2708,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 						", pathFileName: {}",
 						referenceToLog, pathFileName
 					);
-					SPDLOG_ERROR(message);
+					LOG_ERROR(message);
 
 					throw std::runtime_error(message);
 				}
@@ -2764,7 +2764,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -2891,7 +2891,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteStringCallback);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -2913,7 +2913,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 						", url: {}",
 						api, curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
@@ -2930,7 +2930,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
 				if (responseCode == 200 || responseCode == 201)
 				{
-					SPDLOG_DEBUG(
+					LOG_DEBUG(
 						"{} success"
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@"
@@ -2983,7 +2983,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (headersList)
 			{
@@ -3005,7 +3005,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -3020,7 +3020,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -3141,7 +3141,7 @@ void CurlWrapper::downloadFile(
 					// curlDownloadData.maxChunkFileSize;
 					curlDownloadData.currentTotalSize = resumeFileSize;
 
-					SPDLOG_WARN(
+					LOG_WARN(
 						"Coming from a download failure, trying to Resume"
 						"{}"
 						", destBinaryPathName: {}"
@@ -3158,7 +3158,7 @@ void CurlWrapper::downloadFile(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -3277,7 +3277,7 @@ void CurlWrapper::downloadFile(
 						curl_easy_setopt(curl, CURLOPT_RESUME_FROM, resumeFileSize);
 				}
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", url: {}"
@@ -3297,14 +3297,14 @@ void CurlWrapper::downloadFile(
 						", url: {}",
 						api, curl_easy_strerror(curlCode), url
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
 
 				(curlDownloadData.mediaSourceFileStream).close();
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} success"
 					"{}"
 					", @statistics@ - elapsed (secs): @{}@",
@@ -3330,7 +3330,7 @@ void CurlWrapper::downloadFile(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (curl)
 			{
@@ -3340,7 +3340,7 @@ void CurlWrapper::downloadFile(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", url: {}"
@@ -3355,7 +3355,7 @@ void CurlWrapper::downloadFile(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", url: {}"
@@ -3446,7 +3446,7 @@ void CurlWrapper::ftpFile(
 				if (!curl)
 				{
 					std::string errorMessage = std::format("{}. curl_easy_init failed", api);
-					SPDLOG_ERROR(errorMessage);
+					LOG_ERROR(errorMessage);
 
 					throw std::runtime_error(errorMessage);
 				}
@@ -3524,7 +3524,7 @@ void CurlWrapper::ftpFile(
 				curl_easy_setopt(curl, CURLOPT_XFERINFODATA, progressData);
 				curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} details"
 					"{}"
 					", filePathName: {}"
@@ -3545,12 +3545,12 @@ void CurlWrapper::ftpFile(
 						", ftpUrl: {}",
 						api, curl_easy_strerror(curlCode), ftpUrl
 					);
-					// SPDLOG_ERROR(errorMessage);
+					// LOG_ERROR(errorMessage);
 
 					throw ServerNotReachable(errorMessage);
 				}
 
-				SPDLOG_DEBUG(
+				LOG_DEBUG(
 					"{} success"
 					"{}"
 					", @statistics@ - elapsed (secs): @{}@",
@@ -3576,7 +3576,7 @@ void CurlWrapper::ftpFile(
 		}
 		catch (CurlException &e)
 		{
-			SPDLOG_ERROR(e.what());
+			LOG_ERROR(e.what());
 
 			if (curl)
 			{
@@ -3586,7 +3586,7 @@ void CurlWrapper::ftpFile(
 
 			if (retryNumber < maxRetryNumber)
 			{
-				SPDLOG_WARN(
+				LOG_WARN(
 					"{} retry"
 					"{}"
 					", exception: {}"
@@ -3599,7 +3599,7 @@ void CurlWrapper::ftpFile(
 			}
 			else
 			{
-				SPDLOG_ERROR(
+				LOG_ERROR(
 					"{} failed"
 					"{}"
 					", exception: {}",
@@ -3715,7 +3715,7 @@ void CurlWrapper::sendEmail(
 	if (!curl)
 	{
 		std::string errorMessage = "curl_easy_init failed";
-		SPDLOG_ERROR(errorMessage);
+		LOG_ERROR(errorMessage);
 
 		throw std::runtime_error(errorMessage);
 	}
@@ -3783,7 +3783,7 @@ void CurlWrapper::sendEmail(
 		std::string body;
 		for (std::string emailLine : curlUploadEmailData.emailLines)
 			body += emailLine;
-		SPDLOG_INFO(
+		LOG_INFO(
 			"Sending email"
 			", emailServerURL: {}"
 			", from: {}"
@@ -3801,7 +3801,7 @@ void CurlWrapper::sendEmail(
 	if (res != CURLE_OK)
 	{
 		std::string errorMessage = curl_easy_strerror(res);
-		SPDLOG_ERROR(
+		LOG_ERROR(
 			"curl_easy_perform() failed"
 			", curl_easy_strerror(res): {}",
 			errorMessage
@@ -3813,7 +3813,7 @@ void CurlWrapper::sendEmail(
 		throw std::runtime_error(errorMessage);
 	}
 
-	SPDLOG_DEBUG("Email sent successful");
+	LOG_DEBUG("Email sent successful");
 
 	/* Free the list of recipients */
 	curl_slist_free_all(recipients);

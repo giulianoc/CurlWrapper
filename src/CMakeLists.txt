@@ -32,6 +32,7 @@ SET (HEADERS
 	CurlWrapper.h
 )
 include_directories("${SPDLOG_INCLUDE_DIR}")
+include_directories("${THREADLOGGER_INCLUDE_DIR}")
 include_directories("${NLOHMANN_INCLUDE_DIR}")
 include_directories("${JSONUTILS_INCLUDE_DIR}")
 include_directories("${CONVERT_INCLUDE_DIR}")
@@ -39,6 +40,7 @@ include_directories("${CONVERT_INCLUDE_DIR}")
 add_compile_options(-DCOMPRESSOR)
 
 if(APPLE)
+	link_directories("${THREADLOGGER_LIB_DIR}")
 	link_directories("${JSONUTILS_LIB_DIR}")
 	link_directories("${CONVERT_LIB_DIR}")
 endif()
@@ -49,6 +51,7 @@ if(APPLE)
 	target_link_libraries(CurlWrapper JSONUtils)
 	target_link_libraries(CurlWrapper Convert)
 	target_link_libraries(CurlWrapper curl)
+	target_link_libraries(CurlWrapper ThreadLogger)
 	target_link_libraries(CurlWrapper z)
 endif()
 
