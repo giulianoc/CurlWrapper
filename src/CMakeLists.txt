@@ -62,5 +62,8 @@ if(ZORAC)
 else()
 	install (TARGETS CurlWrapper DESTINATION lib)
 	install (FILES ${HEADERS} DESTINATION include)
+	if(NOT DEFINED CURLWRAPPER_INSTALL_HEADERS OR CURLWRAPPER_INSTALL_HEADERS)
+		install(FILES ${HEADERS} DESTINATION include)
+	endif()
 endif()
 
