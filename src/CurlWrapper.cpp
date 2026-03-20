@@ -6,7 +6,6 @@
 
 /*
  * File:   CURL.cpp
- * Author: giuliano
  *
  * Created on March 29, 2018, 6:27 AM
  */
@@ -3649,8 +3648,8 @@ void CurlWrapper::sendEmail(
 {
 	// see: https://everything.curl.dev/usingcurl/smtp
 	// curl --ssl-reqd --url 'smtps://smtppro.zoho.eu:465' --mail-from
-	// 'info@catramms-cloud.com' --mail-rcpt 'giulianocatrambone@gmail.com'
-	// --upload-file ./email.txt --user 'info@catramms-cloud.com:<write here the
+	// 'info@xxx-cloud.com' --mail-rcpt 'xxx@zzz.com'
+	// --upload-file ./email.txt --user 'info@ttt-cloud.com:<write here the
 	// password>'
 
 	CurlUploadEmailData curlUploadEmailData;
