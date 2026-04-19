@@ -38,7 +38,7 @@ class CurlWrapper
 		explicit ServerNotReachable(const std::string &message) : CurlException(message) {};
 		~ServerNotReachable() noexcept override = default;
 
-		[[nodiscard]] virtual std::string_view type() const noexcept override { return "ServerNotReachable"; }
+		[[nodiscard]] std::string_view type() const noexcept override { return "ServerNotReachable"; }
 	};
 
 	struct HTTPError final : public CurlException
@@ -48,6 +48,15 @@ class CurlWrapper
 		~HTTPError() noexcept override = default;
 
 		[[nodiscard]] std::string_view type() const noexcept override { return "HTTPError"; }
+	};
+
+	struct UploadChunksInterruptedByUser final : std::runtime_error
+	{
+		size_t chunkIndex;
+		size_t chunksNumber;
+		UploadChunksInterruptedByUser(size_t chunkIndex, size_t chunksNumber, const std::string &message) : runtime_error(message),
+			chunkIndex(chunkIndex), chunksNumber(chunksNumber) {};
+		~UploadChunksInterruptedByUser() noexcept override = default;
 	};
 
 	struct CurlDownloadData

@@ -310,8 +310,8 @@ nlohmann::json CurlWrapper::httpPutFileAndGetJson(
 
 std::string CurlWrapper::httpPostFileSplittingInChunks(
 	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::string &pathFileName,
-	const std::function<bool(int, int)>& chunkCompleted, const std::string& referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const std::function<bool(int, int)>& chunkCompleted, const std::string& referenceToLog, const int maxRetryNumber,
+	const int secondsToWaitBeforeToRetry
 )
 {
 	uintmax_t fileSizeInBytes = fs::file_size(pathFileName);
@@ -329,10 +329,10 @@ std::string CurlWrapper::httpPostFileSplittingInChunks(
 
 	std::string lastHttpReturn;
 	// stopped: il client deve settarla a true se vuole interrompere l'attività
-	for (int chunkIndex = 0; chunkIndex < chunksNumber; chunkIndex++)
+	for (size_t chunkIndex = 0; chunkIndex < chunksNumber; chunkIndex++)
 	{
-		int64_t contentRangeStart = chunkIndex * chunkSize;
-		int64_t contentRangeEnd_Excluded = chunkIndex + 1 < chunksNumber ? (chunkIndex + 1) * chunkSize : fileSizeInBytes;
+		size_t contentRangeStart = chunkIndex * chunkSize;
+		size_t contentRangeEnd_Excluded = chunkIndex + 1 < chunksNumber ? (chunkIndex + 1) * chunkSize : fileSizeInBytes;
 
 		lastHttpReturn = httpPostFile(
 			url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "", referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
@@ -343,7 +343,12 @@ std::string CurlWrapper::httpPostFileSplittingInChunks(
 		// riceve l'îndice del chunk completato ed il numero totali di chunks
 		// ritorna true se l'upload deve continuare, false se l'upload dete essere interrotto
 		if (!chunkCompleted(chunkIndex, chunksNumber))
-			break;
+		{
+			std::string errorMessage = std::format("Upload interrupted by client after chunk {} of {}", chunkIndex, chunksNumber);
+			LOG_ERROR(errorMessage);
+
+			throw UploadChunksInterruptedByUser(chunkIndex, chunksNumber, errorMessage);
+		}
 	}
 
 	return lastHttpReturn;
