@@ -102,32 +102,32 @@ std::string CurlWrapper::unescape(const std::string &url)
 nlohmann::json CurlWrapper::httpGetJson(
 	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::vector<std::string>& otherHeaders,
 	const std::string& referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry, bool outputCompressed
+	int secondsToWaitBeforeToRetry, bool outputCompressed,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 #ifdef COMPRESSOR
 	if (outputCompressed)
 	{
 		std::vector<uint8_t> binary;
-		httpGetBinary(
-			url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, binary
+		httpGetBinary(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber,
+			secondsToWaitBeforeToRetry, binary, proxyURL, proxyUsername, proxyPassword, verbose
 		);
 		return JSONUtils::toJson<nlohmann::json>(Compressor::decompress_string(binary));
 	}
-	else
 #endif
-	{
-		const std::string response =
-			httpGet(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
-		return JSONUtils::toJson<nlohmann::json>(response);
-	}
+	const std::string response = httpGet(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog,
+		maxRetryNumber, secondsToWaitBeforeToRetry, proxyURL, proxyUsername, proxyPassword, verbose);
+	return JSONUtils::toJson<nlohmann::json>(response);
 }
 
 std::string CurlWrapper::httpPostString(
 	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::string& body,
 	const std::string& contentType, // i.e.: application/json
 	const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
-	bool outputCompressed, bool verbose
+	bool outputCompressed, const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	std::string requestType = "POST";
@@ -139,25 +139,27 @@ std::string CurlWrapper::httpPostString(
 		httpPostPutBinary(
 			url, requestType, timeoutInSeconds, authorization, body,
 			contentType, // i.e.: application/json
-			otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, binary, verbose
+			otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, binary,
+			proxyURL, proxyUsername, proxyPassword, verbose
 		);
 		return Compressor::decompress_string(binary);
 	}
-	else
 #endif
-	{
-		return httpPostPutString(
-				   url, requestType, timeoutInSeconds, authorization, body,
-				   contentType, // i.e.: application/json
-				   otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, verbose
-			).second;
-	}
+	return httpPostPutString(
+	   url, requestType, timeoutInSeconds, authorization, body,
+	   contentType, // i.e.: application/json
+	   otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
+	   proxyURL, proxyUsername, proxyPassword, verbose
+	).second;
 }
 
 std::string CurlWrapper::httpPutString(
 	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::string &body,
 	const std::string& contentType, // i.e.: application/json
-	const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+	const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	bool outputCompressed,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "PUT";
@@ -166,29 +168,29 @@ std::string CurlWrapper::httpPutString(
 	if (outputCompressed)
 	{
 		std::vector<uint8_t> binary;
-		httpPostPutBinary(
-			url, requestType, timeoutInSeconds, authorization, body,
+		httpPostPutBinary(url, requestType, timeoutInSeconds, authorization, body,
 			contentType, // i.e.: application/json
-			otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, binary
+			otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, binary,
+			proxyURL, proxyUsername, proxyPassword, verbose
 		);
 		return Compressor::decompress_string(binary);
 	}
-	else
 #endif
-	{
-		return httpPostPutString(
-				   url, requestType, timeoutInSeconds, authorization, body,
-				   contentType, // i.e.: application/json
-				   otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry
-		)
-			.second;
-	}
+
+	return httpPostPutString(url, requestType, timeoutInSeconds, authorization, body,
+		contentType, // i.e.: application/json
+		otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
+		proxyURL, proxyUsername, proxyPassword, verbose
+	).second;
 }
 
 std::pair<std::string, std::string> CurlWrapper::httpPostString(
 	const std::string &url, long timeoutInSeconds, const std::string &authorization, const std::string& body,
 	const std::string &contentType, // i.e.: application/json
-	const std::vector<std::string>& otherHeaders, const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const std::vector<std::string>& otherHeaders, const std::string &referenceToLog, int maxRetryNumber,
+	int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "POST";
@@ -196,14 +198,18 @@ std::pair<std::string, std::string> CurlWrapper::httpPostString(
 	return httpPostPutString(
 		url, requestType, timeoutInSeconds, authorization, body,
 		contentType, // i.e.: application/json
-		otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry
+		otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
+		proxyURL, proxyUsername, proxyPassword, verbose
 	);
 }
 
 std::pair<std::string, std::string> CurlWrapper::httpPutString(
 	const std::string &url, long timeoutInSeconds, const std::string &authorization, const std::string& body,
 	const std::string &contentType, // i.e.: application/json
-	const std::vector<std::string>& otherHeaders, const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const std::vector<std::string>& otherHeaders, const std::string &referenceToLog, int maxRetryNumber,
+	int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "PUT";
@@ -211,7 +217,8 @@ std::pair<std::string, std::string> CurlWrapper::httpPutString(
 	return httpPostPutString(
 		url, requestType, timeoutInSeconds, authorization, body,
 		contentType, // i.e.: application/json
-		otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry
+		otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
+		proxyURL, proxyUsername, proxyPassword, verbose
 	);
 }
 
@@ -219,12 +226,13 @@ nlohmann::json CurlWrapper::httpPostStringAndGetJson(
 	const std::string& url, long timeoutInSeconds, const std::string &authorization, const std::string &body,
 	const std::string& contentType, // i.e.: application/json
 	const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed,
-	bool verbose
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string response = httpPostString(
 		url, timeoutInSeconds, authorization, body, contentType, otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
-		outputCompressed, verbose
+		outputCompressed, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
 
@@ -234,12 +242,15 @@ nlohmann::json CurlWrapper::httpPostStringAndGetJson(
 nlohmann::json CurlWrapper::httpPutStringAndGetJson(
 	const std::string& url, long timeoutInSeconds, const std::string &authorization, const std::string &body,
 	const std::string& contentType, // i.e.: application/json
-	const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+	const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber,
+	int secondsToWaitBeforeToRetry, bool outputCompressed,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string response = httpPutString(
 		url, timeoutInSeconds, authorization, body, contentType, otherHeaders, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
-		outputCompressed
+		outputCompressed, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
@@ -250,40 +261,46 @@ nlohmann::json CurlWrapper::httpPutStringAndGetJson(
 std::string CurlWrapper::httpPostFile(
 	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::string& pathFileName,
 	uintmax_t fileSizeInBytes, const std::string& contentType, const std::string& referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "POST";
 
 	return httpPostPutFile(
 		url, requestType, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, contentType, referenceToLog, maxRetryNumber,
-		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded
+		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 }
 
 std::string CurlWrapper::httpPutFile(
 	std::string url, long timeoutInSeconds, const std::string &authorization, const std::string& pathFileName, int64_t fileSizeInBytes,
 	const std::string& contentType, const std::string& referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "PUT";
 
 	return httpPostPutFile(
 		url, requestType, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, contentType, referenceToLog, maxRetryNumber,
-		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded
+		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 }
 
 nlohmann::json CurlWrapper::httpPostFileAndGetJson(
 	std::string url, long timeoutInSeconds, const std::string& authorization, const std::string &pathFileName, int64_t fileSizeInBytes,
 	const std::string& referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string response = httpPostFile(
 		url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "", referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
-		contentRangeStart, contentRangeEnd_Excluded
+		contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
@@ -294,12 +311,14 @@ nlohmann::json CurlWrapper::httpPostFileAndGetJson(
 nlohmann::json CurlWrapper::httpPutFileAndGetJson(
 	const std::string &url, long timeoutInSeconds, const std::string& authorization, const std::string& pathFileName, int64_t fileSizeInBytes,
 	const std::string& referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string response = httpPutFile(
 		url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "", referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
-		contentRangeStart, contentRangeEnd_Excluded
+		contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
@@ -310,7 +329,9 @@ nlohmann::json CurlWrapper::httpPutFileAndGetJson(
 std::string CurlWrapper::httpPostFileSplittingInChunks(
 	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::string &pathFileName,
 	const std::function<bool(int, int)>& chunkCompleted, const std::string& referenceToLog, const int maxRetryNumber,
-	const int secondsToWaitBeforeToRetry
+	const int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	uintmax_t fileSizeInBytes = fs::file_size(pathFileName);
@@ -318,8 +339,9 @@ std::string CurlWrapper::httpPostFileSplittingInChunks(
 	constexpr uint64_t chunkSize = 100ULL * 1000ULL * 1000ULL; // 100 MB
 
 	if (fileSizeInBytes <= chunkSize)
-		return httpPostFile(
-			url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "", referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry
+		return httpPostFile(url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "",
+			referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, -1, -1,
+			proxyURL, proxyUsername, proxyPassword, verbose
 		);
 
 	uintmax_t chunksNumber = fileSizeInBytes / chunkSize;
@@ -333,9 +355,9 @@ std::string CurlWrapper::httpPostFileSplittingInChunks(
 		size_t contentRangeStart = chunkIndex * chunkSize;
 		size_t contentRangeEnd_Excluded = chunkIndex + 1 < chunksNumber ? (chunkIndex + 1) * chunkSize : fileSizeInBytes;
 
-		lastHttpReturn = httpPostFile(
-			url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "", referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
-			contentRangeStart, contentRangeEnd_Excluded
+		lastHttpReturn = httpPostFile(url, timeoutInSeconds, authorization, pathFileName, fileSizeInBytes, "",
+			referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded,
+			proxyURL, proxyUsername, proxyPassword, verbose
 		);
 
 		// chunkCompleted:
@@ -355,30 +377,39 @@ std::string CurlWrapper::httpPostFileSplittingInChunks(
 
 std::string CurlWrapper::httpPostFormData(
 	const std::string &url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds, const std::string &referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry
+	int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "POST";
 
-	return httpPostPutFormData(url, formData, requestType, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
+	return httpPostPutFormData(url, formData, requestType, timeoutInSeconds, referenceToLog, maxRetryNumber,
+		secondsToWaitBeforeToRetry, proxyURL, proxyUsername, proxyPassword, verbose);
 }
 
 std::string CurlWrapper::httpPutFormData(
 	const std::string &url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds, const std::string &referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry
+	int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "PUT";
 
-	return httpPostPutFormData(url, formData, requestType, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
+	return httpPostPutFormData(url, formData, requestType, timeoutInSeconds, referenceToLog, maxRetryNumber,
+		secondsToWaitBeforeToRetry, proxyURL, proxyUsername, proxyPassword, verbose);
 }
 
 nlohmann::json CurlWrapper::httpPostFormDataAndGetJson(
 	const std::string &url, const std::vector<std::pair<std::string, std::string>>& formData, long timeoutInSeconds, const std::string& referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry
+	int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
-	std::string response = httpPostFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
+	std::string response = httpPostFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber,
+		secondsToWaitBeforeToRetry, proxyURL, proxyUsername, proxyPassword, verbose);
 
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
 
@@ -386,11 +417,14 @@ nlohmann::json CurlWrapper::httpPostFormDataAndGetJson(
 }
 
 nlohmann::json CurlWrapper::httpPutFormDataAndGetJson(
-	const std::string &url, const std::vector<std::pair<std::string, std::string>>& formData, long timeoutInSeconds, const std::string &referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const std::string &url, const std::vector<std::pair<std::string, std::string>>& formData, long timeoutInSeconds,
+	const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
-	std::string response = httpPutFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry);
+	std::string response = httpPutFormData(url, formData, timeoutInSeconds, referenceToLog, maxRetryNumber,
+		secondsToWaitBeforeToRetry, proxyURL, proxyUsername, proxyPassword, verbose);
 
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
 
@@ -398,17 +432,19 @@ nlohmann::json CurlWrapper::httpPutFormDataAndGetJson(
 }
 
 std::string CurlWrapper::httpPostFileByFormData(
-	const std::string &url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds, const std::string &pathFileName,
-	int64_t fileSizeInBytes,
+	const std::string &url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds,
+	const std::string &pathFileName, int64_t fileSizeInBytes,
 	const std::string &mediaContentType, const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
-	int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "POST";
 
 	return httpPostPutFileByFormData(
 		url, formData, requestType, timeoutInSeconds, pathFileName, fileSizeInBytes, mediaContentType, referenceToLog, maxRetryNumber,
-		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded
+		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 }
 
@@ -416,14 +452,16 @@ std::string CurlWrapper::httpPutFileByFormData(
 	const std::string &url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds, const std::string &pathFileName,
 	int64_t fileSizeInBytes,
 	const std::string &mediaContentType, const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
-	int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+	int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string requestType = "PUT";
 
 	return httpPostPutFileByFormData(
 		url, formData, requestType, timeoutInSeconds, pathFileName, fileSizeInBytes, mediaContentType, referenceToLog, maxRetryNumber,
-		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded
+		secondsToWaitBeforeToRetry, contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 }
 
@@ -431,12 +469,14 @@ nlohmann::json CurlWrapper::httpPostFileByFormDataAndGetJson(
 	const std::string& url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds, const std::string& pathFileName,
 	int64_t fileSizeInBytes, const std::string& mediaContentType,
 	const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart,
-	int64_t contentRangeEnd_Excluded
+	int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string response = httpPostFileByFormData(
 		url, formData, timeoutInSeconds, pathFileName, fileSizeInBytes, mediaContentType, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
-		contentRangeStart, contentRangeEnd_Excluded
+		contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
@@ -448,12 +488,14 @@ nlohmann::json CurlWrapper::httpPutFileByFormDataAndGetJson(
 	const std::string& url, const std::vector<std::pair<std::string, std::string>>& formData, long timeoutInSeconds, const std::string &pathFileName,
 	int64_t fileSizeInBytes, const std::string& mediaContentType,
 	const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart,
-	int64_t contentRangeEnd_Excluded
+	int64_t contentRangeEnd_Excluded,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string response = httpPutFileByFormData(
 		url, formData, timeoutInSeconds, pathFileName, fileSizeInBytes, mediaContentType, referenceToLog, maxRetryNumber, secondsToWaitBeforeToRetry,
-		contentRangeStart, contentRangeEnd_Excluded
+		contentRangeStart, contentRangeEnd_Excluded, proxyURL, proxyUsername, proxyPassword, verbose
 	);
 
 	auto jsonRoot = JSONUtils::toJson<nlohmann::json>(response);
@@ -463,7 +505,7 @@ nlohmann::json CurlWrapper::httpPutFileByFormDataAndGetJson(
 
 size_t curlDownloadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 {
-	CurlWrapper::CurlDownloadData *curlDownloadData = (CurlWrapper::CurlDownloadData *)f;
+	auto *curlDownloadData = static_cast<CurlWrapper::CurlDownloadData *>(f);
 
 	if (curlDownloadData->currentChunkNumber == 0)
 	{
@@ -534,7 +576,7 @@ size_t curlDownloadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 
 size_t curlUploadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 {
-	CurlWrapper::CurlUploadData *curlUploadData = (CurlWrapper::CurlUploadData *)f;
+	auto *curlUploadData = static_cast<CurlWrapper::CurlUploadData *>(f);
 
 	int64_t currentFilePosition = curlUploadData->mediaSourceFileStream.tellg();
 
@@ -564,7 +606,7 @@ size_t curlUploadCallback(char *ptr, size_t size, size_t nmemb, void *f)
 
 size_t curlUploadFormDataCallback(char *ptr, size_t size, size_t nmemb, void *f)
 {
-	CurlWrapper::CurlUploadFormData *curlUploadFormData = (CurlWrapper::CurlUploadFormData *)f;
+	auto *curlUploadFormData = static_cast<CurlWrapper::CurlUploadFormData *>(f);
 
 	int64_t currentFilePosition = curlUploadFormData->mediaSourceFileStream.tellg();
 
@@ -614,7 +656,7 @@ size_t curlUploadFormDataCallback(char *ptr, size_t size, size_t nmemb, void *f)
 
 		return curlUploadFormData->formData.size();
 	}
-	else if (currentFilePosition == curlUploadFormData->upToByte_Excluded)
+	if (currentFilePosition == curlUploadFormData->upToByte_Excluded)
 	{
 		if (!curlUploadFormData->endOfFormDataSent)
 		{
@@ -657,7 +699,7 @@ size_t curlUploadFormDataCallback(char *ptr, size_t size, size_t nmemb, void *f)
 
 			return curlUploadFormData->endOfFormData.size();
 		}
-		else
+
 		{
 			LOG_ERROR(
 				"This scenario should never happen"
@@ -792,13 +834,14 @@ static int curlDebugCallback(CURL*, curl_infotype type, char* data, size_t size,
 
 std::string CurlWrapper::httpGet(
 	const std::string &url, long timeoutInSeconds, const std::string &authorization, const std::vector<std::string> &otherHeaders,
-	const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+	const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::vector<uint8_t> binary;
 	httpGetBinary(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber,
-		secondsToWaitBeforeToRetry, binary
-	);
+		secondsToWaitBeforeToRetry, binary, proxyURL, proxyUsername, proxyPassword, verbose);
 
 	std::string response = std::string(binary.begin(), binary.end());
 
@@ -810,7 +853,9 @@ std::string CurlWrapper::httpGet(
 
 void CurlWrapper::httpGetBinary(
 	std::string url, long timeoutInSeconds, std::string authorization, const std::vector<std::string>& otherHeaders, std::string referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary, bool verbose
+	int maxRetryNumber, int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string api = "httpGet";
@@ -1105,11 +1150,10 @@ void CurlWrapper::httpGetBinary(
 					throw;
 				if (e.type() == "HTTPError")
 				{
-					HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+					auto *exception = dynamic_cast<HTTPError *>(&e);
 					if (exception->httpErrorCode == 502)
 						throw ServerNotReachable(e.what());
-					else
-						throw;
+					throw;
 				}
 				throw;
 			}
@@ -1119,7 +1163,9 @@ void CurlWrapper::httpGetBinary(
 
 std::string CurlWrapper::httpDelete(
 	std::string url, long timeoutInSeconds, std::string authorization, const std::vector<std::string>& otherHeaders,
-	std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool verbose
+	std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string api = "httpDelete";
@@ -1415,11 +1461,10 @@ std::string CurlWrapper::httpDelete(
 					throw;
 				if (e.type() == "HTTPError")
 				{
-					HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+					auto *exception = dynamic_cast<HTTPError *>(&e);
 					if (exception->httpErrorCode == 502)
 						throw ServerNotReachable(e.what());
-					else
-						throw;
+					throw;
 				}
 				throw;
 			}
@@ -1435,7 +1480,8 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 	long timeoutInSeconds, std::string authorization, const std::string& body,
 	std::string contentType, // i.e.: application/json
 	const std::vector<std::string>& otherHeaders, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
-	bool verbose
+	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
+	const std::optional<std::string>& proxyPassword, bool verbose
 )
 {
 	std::string api = "httpPostPutString";
@@ -1467,15 +1513,21 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 
 				curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-				/*
-				curl_easy_setopt(curl, CURLOPT_PROXY, "http://proxy:port");
-				curl_easy_setopt(curl, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
-				curl_easy_setopt(curl, CURLOPT_HTTPPROXYTUNNEL, 1L);
-
-				// se serve auth proxy:
-				curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
-				curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, "user:password");
-				*/
+				if (proxyURL && !proxyURL->empty())
+				{
+					// i.e.: "http://proxy:port"
+					curl_easy_setopt(curl, CURLOPT_PROXY, proxyURL->c_str());
+					// CURLOPT_PROXYTYPE: dovrebbe dedurlo dallo schema di CURLOPT_PROXY
+					// curl_easy_setopt(curl, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
+					if (proxyURL->starts_with("http://") && url.starts_with("https://"))
+						curl_easy_setopt(curl, CURLOPT_HTTPPROXYTUNNEL, 1L);
+					if (proxyUsername && !proxyUsername->empty() && proxyPassword && !proxyPassword->empty())
+					{
+						curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY); // BASIC, NTLM, ...
+						curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,
+							std::format("{}:{}", *proxyUsername, *proxyPassword).c_str());
+					}
+				}
 
 				// uso optional per evitare di usare memoria se verbose è false
 				std::optional<std::array<char, CURL_ERROR_SIZE>> errorBuffer;
@@ -1797,7 +1849,9 @@ void CurlWrapper::httpPostPutBinary(
 	long timeoutInSeconds, const std::string& authorization, const std::string& body,
 	const std::string& contentType, // i.e.: application/json
 	const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
-	std::vector<uint8_t> &binary, bool verbose
+	std::vector<uint8_t> &binary,
+	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	std::string api = "httpPostPutBinary";
@@ -2065,7 +2119,7 @@ void CurlWrapper::httpPostPutBinary(
 
 			if (e.type() == "HTTPError")
 			{
-				HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+				auto *exception = dynamic_cast<HTTPError *>(&e);
 				if (exception->httpErrorCode == 404)
 					throw;
 			}
@@ -2098,16 +2152,14 @@ void CurlWrapper::httpPostPutBinary(
 
 				if (e.type() == "ServerNotReachable")
 					throw;
-				else if (e.type() == "HTTPError")
+				if (e.type() == "HTTPError")
 				{
-					HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+					auto *exception = dynamic_cast<HTTPError *>(&e);
 					if (exception->httpErrorCode == 502)
 						throw ServerNotReachable(e.what());
-					else
-						throw;
-				}
-				else
 					throw;
+				}
+				throw;
 			}
 		}
 	}
@@ -2119,7 +2171,8 @@ std::string CurlWrapper::httpPostPutFile(
 	long timeoutInSeconds, const std::string& authorization, const std::string& pathFileName, int64_t fileSizeInBytes,
 	const std::string& contentType, const std::string& referenceToLog,
 	int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
-	bool verbose
+	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	std::string api = "httpPostPutFile";
@@ -2132,7 +2185,7 @@ std::string CurlWrapper::httpPostPutFile(
 		retryNumber++;
 
 		CURL *curl = nullptr;
-		struct curl_slist *headersList = nullptr;
+		curl_slist *headersList = nullptr;
 
 		try
 		{
@@ -2337,9 +2390,9 @@ std::string CurlWrapper::httpPostPutFile(
 					else
 						contentLengthOrRangeHeader = std::format("Content-Length: {}", fileSizeInBytes);
 					headersList = curl_slist_append(headersList, contentLengthOrRangeHeader.c_str());
-					if (contentType != "")
+					if (!contentType.empty())
 						headersList = curl_slist_append(headersList, std::format("Content-Type: {}", contentType).c_str());
-					if (authorization != "")
+					if (!authorization.empty())
 						headersList = curl_slist_append(headersList, std::format("Authorization: {}", authorization).c_str());
 
 					curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headersList);
@@ -2382,7 +2435,7 @@ std::string CurlWrapper::httpPostPutFile(
 
 				// sResponse = response.str();
 				// LF and CR create problems to the json parser...
-				while (response.size() > 0 && (response.back() == 10 || response.back() == 13))
+				while (!response.empty() && (response.back() == 10 || response.back() == 13))
 					response.pop_back();
 
 				// long responseCode = curlpp::infos::ResponseCode::get(request);
@@ -2454,7 +2507,7 @@ std::string CurlWrapper::httpPostPutFile(
 
 			if (e.type() == "HTTPError")
 			{
-				HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+				auto *exception = dynamic_cast<HTTPError *>(&e);
 				if (exception->httpErrorCode == 404)
 					throw;
 			}
@@ -2488,16 +2541,14 @@ std::string CurlWrapper::httpPostPutFile(
 
 				if (e.type() == "ServerNotReachable")
 					throw;
-				else if (e.type() == "HTTPError")
+				if (e.type() == "HTTPError")
 				{
-					HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+					auto *exception = dynamic_cast<HTTPError *>(&e);
 					if (exception->httpErrorCode == 502)
 						throw ServerNotReachable(e.what());
-					else
-						throw;
-				}
-				else
 					throw;
+				}
+				throw;
 			}
 		}
 	}
@@ -2509,7 +2560,8 @@ std::string CurlWrapper::httpPostPutFormData(
 	std::string url, const std::vector<std::pair<std::string, std::string>>& formData,
 	const std::string& requestType, // POST or PUT
 	long timeoutInSeconds, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
-	bool verbose
+	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	// per vedere cosa manda curl
@@ -2525,7 +2577,7 @@ std::string CurlWrapper::httpPostPutFormData(
 		retryNumber++;
 
 		CURL *curl = nullptr;
-		struct curl_slist *headersList = nullptr;
+		curl_slist *headersList = nullptr;
 
 		try
 		{
@@ -2672,7 +2724,7 @@ std::string CurlWrapper::httpPostPutFormData(
 				curl_easy_setopt(curl, CURLOPT_POSTFIELDS, sFormData.c_str());
 
 				// request.setOpt(new curlpp::options::WriteStream(&response));
-				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
+				curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteStringCallback);
 
 				LOG_DEBUG(
@@ -2704,7 +2756,7 @@ std::string CurlWrapper::httpPostPutFormData(
 
 				// sResponse = response.str();
 				// LF and CR create problems to the json parser...
-				while (response.size() > 0 && (response.back() == 10 || response.back() == 13))
+				while (!response.empty() && (response.back() == 10 || response.back() == 13))
 					response.pop_back();
 
 				// long responseCode = curlpp::infos::ResponseCode::get(request);
@@ -2776,7 +2828,7 @@ std::string CurlWrapper::httpPostPutFormData(
 
 			if (e.type() == "HTTPError")
 			{
-				HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+				auto *exception = dynamic_cast<HTTPError *>(&e);
 				if (exception->httpErrorCode == 404)
 					throw;
 			}
@@ -2810,16 +2862,14 @@ std::string CurlWrapper::httpPostPutFormData(
 
 				if (e.type() == "ServerNotReachable")
 					throw;
-				else if (e.type() == "HTTPError")
+				if (e.type() == "HTTPError")
 				{
-					HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+					auto *exception = dynamic_cast<HTTPError *>(&e);
 					if (exception->httpErrorCode == 502)
 						throw ServerNotReachable(e.what());
-					else
-						throw;
-				}
-				else
 					throw;
+				}
+				throw;
 			}
 		}
 	}
@@ -2832,7 +2882,8 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 	const std::string& requestType, // POST or PUT
 	long timeoutInSeconds, std::string pathFileName, int64_t fileSizeInBytes, const std::string& mediaContentType, std::string referenceToLog, int maxRetryNumber,
 	int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
-	bool verbose
+	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	std::string api = "httpPostPutFileByFormData";
@@ -2845,7 +2896,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 		retryNumber++;
 
 		CURL *curl = nullptr;
-		struct curl_slist *headersList = nullptr;
+		curl_slist *headersList = nullptr;
 
 		try
 		{
@@ -3091,7 +3142,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 
 				// sResponse = response.str();
 				// LF and CR create problems to the json parser...
-				while (response.size() > 0 && (response.back() == 10 || response.back() == 13))
+				while (!response.empty() && (response.back() == 10 || response.back() == 13))
 					response.pop_back();
 
 				// long responseCode = curlpp::infos::ResponseCode::get(request);
@@ -3167,7 +3218,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 
 			if (e.type() == "HTTPError")
 			{
-				HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+				auto *exception = dynamic_cast<HTTPError *>(&e);
 				if (exception->httpErrorCode == 404)
 					throw;
 			}
@@ -3201,16 +3252,14 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 
 				if (e.type() == "ServerNotReachable")
 					throw;
-				else if (e.type() == "HTTPError")
+				if (e.type() == "HTTPError")
 				{
-					HTTPError *exception = dynamic_cast<HTTPError *>(&e);
+					auto *exception = dynamic_cast<HTTPError *>(&e);
 					if (exception->httpErrorCode == 502)
 						throw ServerNotReachable(e.what());
-					else
-						throw;
-				}
-				else
 					throw;
+				}
+				throw;
 			}
 		}
 	}
@@ -3221,7 +3270,9 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 void CurlWrapper::downloadFile(
 	std::string url, std::string destBinaryPathName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t), void *progressData,
 	long downloadChunkSizeInMegaBytes, std::string referenceToLog, long timeoutInSeconds, int maxRetryNumber, bool resumeActive,
-	int secondsToWaitBeforeToRetry, bool verbose
+	int secondsToWaitBeforeToRetry,
+	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	std::string api = "downloadFile";
@@ -3558,7 +3609,9 @@ void CurlWrapper::downloadFile(
 void CurlWrapper::ftpFile(
 	std::string filePathName, const std::string& fileName, int64_t sizeInBytes, std::string ftpServer, int ftpPort, std::string ftpUserName, std::string ftpPassword,
 	std::string ftpRemoteDirectory, const std::string& ftpRemoteFileName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
-	void *progressData, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool verbose
+	void *progressData, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	std::string api = "ftpFile";
@@ -3579,10 +3632,10 @@ void CurlWrapper::ftpFile(
 			{
 				ftpUrl = std::format("ftp://{}:{}@{}:{}{}", ftpUserName, ftpPassword, ftpServer, ftpPort, ftpRemoteDirectory);
 
-				if (ftpRemoteDirectory.size() == 0 || ftpRemoteDirectory.back() != '/')
+				if (ftpRemoteDirectory.empty() || ftpRemoteDirectory.back() != '/')
 					ftpUrl += "/";
 
-				if (ftpRemoteFileName == "")
+				if (ftpRemoteFileName.empty())
 					ftpUrl += fileName;
 				else
 					ftpUrl += ftpRemoteFileName;
@@ -3844,7 +3897,8 @@ void CurlWrapper::sendEmail(
 	// 2023-02-18: mi è sembrato che il provider blocca l'email se username e from sono diversi!!!
 	const std::string& password, std::string from, std::string tosCommaSeparated, std::string ccsCommaSeparated, std::string subject, std::vector<std::string> &emailBody,
 	std::string contentType, // i.e.: text/html; charset=\"UTF-8\"
-	bool verbose
+	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
+	const std::optional<std::string> &proxyPassword, bool verbose
 )
 {
 	// see: https://everything.curl.dev/usingcurl/smtp
@@ -3870,7 +3924,7 @@ void CurlWrapper::sendEmail(
 			{
 				if (!address.empty())
 				{
-					if (addresses == "")
+					if (addresses.empty())
 						addresses = std::format("<{}>", address);
 					else
 						addresses += std::format(", <{}>", address);
@@ -3881,7 +3935,7 @@ void CurlWrapper::sendEmail(
 		}
 
 		// add Cc
-		if (ccsCommaSeparated != "")
+		if (!ccsCommaSeparated.empty())
 		{
 			std::string addresses;
 
@@ -3892,7 +3946,7 @@ void CurlWrapper::sendEmail(
 			{
 				if (!address.empty())
 				{
-					if (addresses == "")
+					if (addresses.empty())
 						addresses = std::format("<{}>", address);
 					else
 						addresses += std::format(", <{}>", address);
@@ -3904,7 +3958,7 @@ void CurlWrapper::sendEmail(
 
 		curlUploadEmailData.emailLines.push_back(std::format("Subject: {}\r\n", subject));
 		curlUploadEmailData.emailLines.push_back(std::format("Content-Type: {}\r\n", contentType));
-		curlUploadEmailData.emailLines.push_back("\r\n"); // empty line to divide headers from body, see RFC5322
+		curlUploadEmailData.emailLines.emplace_back("\r\n"); // empty line to divide headers from body, see RFC5322
 		curlUploadEmailData.emailLines.insert(curlUploadEmailData.emailLines.end(), emailBody.begin(), emailBody.end());
 	}
 
@@ -3968,7 +4022,7 @@ void CurlWrapper::sendEmail(
 					recipients = curl_slist_append(recipients, address.c_str());
 			}
 		}
-		if (ccsCommaSeparated != "")
+		if (!ccsCommaSeparated.empty())
 		{
 			std::stringstream ssAddresses(ccsCommaSeparated);
 			std::string address;
