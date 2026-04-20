@@ -96,6 +96,13 @@ class CurlWrapper
 		std::deque<std::string> emailLines;
 	};
 
+	// usato nel caso in cui verbose è attivato
+	struct CurlDebugContext
+	{
+		bool enabled = false;
+		std::string trace;   // qui accumuliamo il verbose
+	};
+
 	static void globalInitialize();
 
 	static void globalTerminate();
@@ -108,7 +115,7 @@ class CurlWrapper
 
 	static void httpGetBinary(
 		std::string url, long timeoutInSeconds, std::string authorization, const std::vector<std::string>& otherHeaders, std::string referenceToLog, int maxRetryNumber,
-		int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary
+		int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary, bool verbose = false
 	);
 
 	static std::string httpGet(
@@ -124,13 +131,14 @@ class CurlWrapper
 
 	static std::string httpDelete(
 		std::string url, long timeoutInSeconds, std::string authorization, const std::vector<std::string>& otherHeaders = std::vector<std::string>(), std::string referenceToLog = "",
-		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
+		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, bool verbose = false
 	);
 
 	static std::string httpPostString(
 		const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::string& body,
 		const std::string& contentType, // i.e.: application/json
-		const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry, bool outputCompressed
+		const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+		bool outputCompressed, bool verbose = false
 	);
 
 	static std::string httpPutString(
@@ -141,7 +149,8 @@ class CurlWrapper
 
 	static std::pair<std::string, std::string> httpPostString(
 		const std::string &url, long timeoutInSeconds, const std::string &authorization, const std::string& body, const std::string &contentType = "application/json",
-		const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
+		const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string &referenceToLog = "", int maxRetryNumber = 0,
+		int secondsToWaitBeforeToRetry = 15
 	);
 
 	static std::pair<std::string, std::string> httpPutString(
@@ -152,7 +161,7 @@ class CurlWrapper
 	static nlohmann::json httpPostStringAndGetJson(
 		const std::string& url, long timeoutInSeconds, const std::string &authorization, const std::string &body, const std::string& contentType = "application/json",
 		const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
-		bool outputCompressed = false
+		bool outputCompressed = false, bool verbose = false
 	);
 
 	static nlohmann::json httpPutStringAndGetJson(
@@ -236,18 +245,18 @@ class CurlWrapper
 	static void downloadFile(
 		std::string url, std::string destBinaryPathName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t), void *progressData,
 		long downloadChunkSizeInMegaBytes = 500, std::string referenceToLog = "", long timeoutInSeconds = 120, int maxRetryNumber = 0,
-		bool resumeActive = false, int secondsToWaitBeforeToRetry = 15
+		bool resumeActive = false, int secondsToWaitBeforeToRetry = 15, bool verbose = false
 	);
 
 	static void ftpFile(
 		std::string filePathName, const std::string& fileName, int64_t sizeInBytes, std::string ftpServer, int ftpPort, std::string ftpUserName, std::string ftpPassword,
 		std::string ftpRemoteDirectory, const std::string& ftpRemoteFileName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
-		void *progressData, std::string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15
+		void *progressData, std::string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, bool verbose = false
 	);
 
 	static void sendEmail(
 		std::string emailServerURL, const std::string& useName, const std::string& password, std::string from, std::string tosCommaSeparated, std::string ccsCommaSeparated, std::string subject,
-		std::vector<std::string> &emailBody, std::string contentType
+		std::vector<std::string> &emailBody, std::string contentType, bool verbose = false
 	);
 
   private:
@@ -256,7 +265,8 @@ class CurlWrapper
 		const std::string& requestType, // POST or PUT
 		long timeoutInSeconds, std::string authorization, const std::string& body,
 		std::string contentType, // i.e.: application/json
-		const std::vector<std::string>& otherHeaders, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+		const std::vector<std::string>& otherHeaders, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+		bool verbose = false
 	);
 
 	static void httpPostPutBinary(
@@ -265,7 +275,7 @@ class CurlWrapper
 		long timeoutInSeconds, const std::string& authorization, const std::string& body,
 		const std::string& contentType, // i.e.: application/json
 		const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber,
-		int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary
+		int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary, bool verbose = false
 	);
 
 	static std::string httpPostPutFile(
@@ -273,19 +283,21 @@ class CurlWrapper
 		const std::string& requestType, // POST or PUT
 		long timeoutInSeconds, const std::string& authorization, const std::string& pathFileName, int64_t fileSizeInBytes,
 		const std::string& contentType, const std::string& referenceToLog,
-		int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+		int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
+		bool verbose = false
 	);
 
 	static std::string httpPostPutFormData(
 		std::string url, const std::vector<std::pair<std::string, std::string>>& formData,
 		const std::string& requestType, // POST or PUT
-		long timeoutInSeconds, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry
+		long timeoutInSeconds, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
+		bool verbose = false
 	);
 
 	static std::string httpPostPutFileByFormData(
 		std::string url, const std::vector<std::pair<std::string, std::string>>& formData,
 		const std::string& requestType, // POST or PUT
 		long timeoutInSeconds, std::string pathFileName, int64_t fileSizeInBytes, const std::string& mediaContentType, std::string referenceToLog, int maxRetryNumber,
-		int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded
+		int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded, bool verbose = false
 	);
 };
