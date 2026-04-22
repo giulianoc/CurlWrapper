@@ -117,7 +117,8 @@ class CurlWrapper
 		std::string url, long timeoutInSeconds, std::string authorization, const std::vector<std::string>& otherHeaders, std::string referenceToLog, int maxRetryNumber,
 		int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpGet(
@@ -125,14 +126,16 @@ class CurlWrapper
 		const std::string &referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpGetJson(
 		const std::string& url, long timeoutInSeconds, const std::string& authorization = "", const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string& referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, bool outputCompressed = false,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpDelete(
@@ -140,7 +143,8 @@ class CurlWrapper
 		const std::vector<std::string>& otherHeaders = std::vector<std::string>(), std::string referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostString(
@@ -149,7 +153,8 @@ class CurlWrapper
 		const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
 		bool outputCompressed, const std::optional<std::string> &proxyURL = std::nullopt,
 		const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPutString(
@@ -158,7 +163,8 @@ class CurlWrapper
 		const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
 		bool outputCompressed,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::pair<std::string, std::string> httpPostString(
@@ -166,7 +172,8 @@ class CurlWrapper
 		const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string &referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::pair<std::string, std::string> httpPutString(
@@ -174,7 +181,8 @@ class CurlWrapper
 		const std::string &contentType = "application/json", const std::vector<std::string>& otherHeaders = std::vector<std::string>(),
 		const std::string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPostStringAndGetJson(
@@ -182,7 +190,8 @@ class CurlWrapper
 		const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		bool outputCompressed = false,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPutStringAndGetJson(
@@ -190,7 +199,8 @@ class CurlWrapper
 		const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		bool outputCompressed = false,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostFile(
@@ -199,7 +209,8 @@ class CurlWrapper
 		const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1,
 		int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPutFile(
@@ -207,7 +218,8 @@ class CurlWrapper
 		const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, int64_t contentRangeStart = -1,
 		int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPostFileAndGetJson(
@@ -215,7 +227,8 @@ class CurlWrapper
 		const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPutFileAndGetJson(
@@ -223,7 +236,8 @@ class CurlWrapper
 		int64_t fileSizeInBytes, const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostFileSplittingInChunks(
@@ -231,35 +245,40 @@ class CurlWrapper
 		const std::function<bool(int, int)>& chunkCompleted, const std::string& referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostFormData(
 		const std::string &url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds, const std::string &referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPutFormData(
 		const std::string &url, const std::vector<std::pair<std::string, std::string>> &formData, long timeoutInSeconds, const std::string &referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPostFormDataAndGetJson(
 		const std::string &url, const std::vector<std::pair<std::string, std::string>>& formData, long timeoutInSeconds, const std::string& referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPutFormDataAndGetJson(
 		const std::string &url, const std::vector<std::pair<std::string, std::string>>& formData, long timeoutInSeconds, const std::string &referenceToLog = "", int maxRetryNumber = 0,
 		int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostFileByFormData(
@@ -267,7 +286,8 @@ class CurlWrapper
 		const std::string &mediaContentType, const std::string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPutFileByFormData(
@@ -275,7 +295,8 @@ class CurlWrapper
 		const std::string &mediaContentType, const std::string &referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPostFileByFormDataAndGetJson(
@@ -283,7 +304,8 @@ class CurlWrapper
 		const std::string& mediaContentType, const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static nlohmann::json httpPutFileByFormDataAndGetJson(
@@ -291,7 +313,8 @@ class CurlWrapper
 		const std::string& mediaContentType, const std::string& referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		int64_t contentRangeStart = -1, int64_t contentRangeEnd_Excluded = -1,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static void downloadFile(
@@ -299,7 +322,8 @@ class CurlWrapper
 		long downloadChunkSizeInMegaBytes = 500, std::string referenceToLog = "", long timeoutInSeconds = 120, int maxRetryNumber = 0,
 		bool resumeActive = false, int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static void ftpFile(
@@ -307,14 +331,16 @@ class CurlWrapper
 		std::string ftpRemoteDirectory, const std::string& ftpRemoteFileName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
 		void *progressData, std::string referenceToLog = "", int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static void sendEmail(
 		std::string emailServerURL, const std::string& useName, const std::string& password, std::string from, std::string tosCommaSeparated, std::string ccsCommaSeparated, std::string subject,
 		std::vector<std::string> &emailBody, std::string contentType,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
   private:
@@ -325,7 +351,8 @@ class CurlWrapper
 		// i.e.: application/json
 		const std::vector<std::string> &otherHeaders, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static void httpPostPutBinary(
@@ -336,7 +363,8 @@ class CurlWrapper
 		const std::vector<std::string>& otherHeaders, const std::string& referenceToLog, int maxRetryNumber,
 		int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostPutFile(
@@ -346,7 +374,8 @@ class CurlWrapper
 		const std::string& contentType, const std::string& referenceToLog,
 		int maxRetryNumber, int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostPutFormData(
@@ -354,7 +383,8 @@ class CurlWrapper
 		const std::string& requestType, // POST or PUT
 		long timeoutInSeconds, std::string referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 
 	static std::string httpPostPutFileByFormData(
@@ -363,6 +393,7 @@ class CurlWrapper
 		long timeoutInSeconds, std::string pathFileName, int64_t fileSizeInBytes, const std::string& mediaContentType, std::string referenceToLog, int maxRetryNumber,
 		int secondsToWaitBeforeToRetry, int64_t contentRangeStart, int64_t contentRangeEnd_Excluded,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt,
+		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
 };
