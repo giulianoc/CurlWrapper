@@ -318,12 +318,12 @@ class CurlWrapper
 	);
 
 	static void downloadFile(
-		std::string url, std::string destBinaryPathName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t), void *progressData,
-		long downloadChunkSizeInMegaBytes = 500, std::string referenceToLog = "", long timeoutInSeconds = 120, int maxRetryNumber = 0,
-		bool resumeActive = false, int secondsToWaitBeforeToRetry = 15,
+		std::string url, std::string destBinaryPathName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t),
+		void *progressData, long downloadChunkSizeInMegaBytes = 500, std::string referenceToLog = "", std::optional<long> timeoutInSeconds = 120,
+		int maxRetryNumber = 0, bool resumeActive = false, int secondsToWaitBeforeToRetry = 15,
 		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt,
-		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
+		const std::optional<std::string> &proxyPassword = std::nullopt, const std::optional<std::string> &httpSSLVersion = std::nullopt,
+		bool verbose = false
 	);
 
 	static void ftpFile(

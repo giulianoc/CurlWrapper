@@ -3467,7 +3467,7 @@ std::string CurlWrapper::httpPostPutFileByFormData(
 
 void CurlWrapper::downloadFile(
 	std::string url, std::string destBinaryPathName, int (*progressCallback)(void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t), void *progressData,
-	long downloadChunkSizeInMegaBytes, std::string referenceToLog, long timeoutInSeconds, int maxRetryNumber, bool resumeActive,
+	long downloadChunkSizeInMegaBytes, std::string referenceToLog, std::optional<long> timeoutInSeconds, int maxRetryNumber, bool resumeActive,
 	int secondsToWaitBeforeToRetry,
 	const std::optional<std::string> &proxyURL, const std::optional<std::string> &proxyUsername,
 	const std::optional<std::string> &proxyPassword, const std::optional<std::string> &httpSSLVersion, bool verbose
@@ -3569,9 +3569,6 @@ void CurlWrapper::downloadFile(
 					);
 				}
 
-				// curlpp::Cleanup cleaner;
-				// curlpp::Easy request;
-
 				curl = curl_easy_init();
 				if (!curl)
 				{
@@ -3581,24 +3578,27 @@ void CurlWrapper::downloadFile(
 					throw std::runtime_error(errorMessage);
 				}
 
-				curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeoutInSeconds);
+				// Per download lunghi il timeout va messo molto alto o disabilitato
+				if (timeoutInSeconds)
+					curl_easy_setopt(curl, CURLOPT_TIMEOUT, *timeoutInSeconds); // timeout totale, per dwl lunghi puoi metterlo a 6L * 60L * 60L (6 ore)
+				else
+				{
+					curl_easy_setopt(curl, CURLOPT_TIMEOUT, 0L);          // nessun timeout totale
+					curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 30L);  // timeout solo per la connessione
+				}
 
-				// Set the writer callback to enable cURL to write result in a memory area
-				// request.setOpt(new curlpp::options::WriteStream(&mediaSourceFileStream));
+				// per evitare download infiniti quando la connessione si “freeza”
+				curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L); // 1 KB/s
+				curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);    // per 60 secondi
 
-				// which timeout we have to use here???
-				// request.setOpt(new curlpp::options::Timeout(curlTimeoutInSeconds));
+				// Keepalive (aiuta con NAT/firewall che chiudono connessioni “idle”)
+				curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+				curl_easy_setopt(curl, CURLOPT_TCP_KEEPIDLE, 60L);
+				curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, 60L);
 
-				/*
-				curlpp::options::WriteFunctionCurlFunction curlDownloadCallbackFunction(curlDownloadCallback);
-				curlpp::OptionTrait<void *, CURLOPT_WRITEDATA> curlDownloadDataData(&curlDownloadData);
-				request.setOpt(curlDownloadCallbackFunction);
-				request.setOpt(curlDownloadDataData);
-				*/
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&curlDownloadData);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlDownloadCallback);
 
-				// request.setOpt(new curlpp::options::Url(url));
 				curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
 				if (proxyURL && !proxyURL->empty())
@@ -3811,7 +3811,8 @@ void CurlWrapper::downloadFile(
 					", retryNumber: {}"
 					", maxRetryNumber: {}"
 					", secondsToWaitBeforeToRetry: {}",
-					api, referenceToLog, url, timeoutInSeconds, e.what(), retryNumber, maxRetryNumber, secondsToWaitBeforeToRetry * (retryNumber + 1)
+					api, referenceToLog, url, timeoutInSeconds ? *timeoutInSeconds : 0L,
+					e.what(), retryNumber, maxRetryNumber, secondsToWaitBeforeToRetry * (retryNumber + 1)
 				);
 				std::this_thread::sleep_for(std::chrono::seconds(secondsToWaitBeforeToRetry * (retryNumber + 1)));
 			}
@@ -3823,7 +3824,7 @@ void CurlWrapper::downloadFile(
 					", url: {}"
 					", timeoutInSeconds: {}"
 					", exception: {}",
-					api, referenceToLog, url, timeoutInSeconds, e.what()
+					api, referenceToLog, url, timeoutInSeconds ? *timeoutInSeconds : 0L, e.what()
 				);
 
 				throw;
