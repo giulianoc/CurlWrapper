@@ -1042,7 +1042,6 @@ void CurlWrapper::httpGetBinary(InputParameters& inputParameters, OutputParamete
 				// request.setOpt(new curlpp::options::Timeout(timeoutInSeconds));
 				curl_easy_setopt(curl, CURLOPT_TIMEOUT, inputParameters.timeoutInSeconds);
 
-				LOG_ERROR("RESPONSE HEADER CLEAR");
 				outputParameters.responseHeaders.clear();
 				curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, responseHeadersCallback);
 				curl_easy_setopt(curl, CURLOPT_HEADERDATA, &(outputParameters.responseHeaders));
