@@ -103,6 +103,47 @@ class CurlWrapper
 		std::string trace;   // qui accumuliamo il verbose
 	};
 
+	struct InputParameters
+	{
+		std::string url;
+		long timeoutInSeconds;
+		std::string authorization;
+		std::vector<std::string> otherHeaders;
+		std::string referenceToLog;
+		int maxRetryNumber = 0;
+		int secondsToWaitBeforeToRetry = 15;
+		bool outputCompressed = false;
+		std::optional<std::string> proxyURL = std::nullopt;
+		std::optional<std::string> proxyUsername = std::nullopt;
+		std::optional<std::string> proxyPassword = std::nullopt;
+		std::optional<std::string> httpSSLVersion = std::nullopt;
+		bool verbose = false;
+	};
+
+	struct OutputParameters
+	{
+		// entrambi i campi sono inizializzati
+		std::vector<uint8_t> binary;
+		std::string response;
+
+		std::vector<std::pair<std::string, std::string>> responseHeaders;
+
+		std::string getResponseHeaderValue(const std::string& key, const bool emptyIfNotFound = true)
+		{
+			for (const auto& [headerKey, headerValue] : responseHeaders)
+			{
+				if (key == headerKey)
+					return headerValue;
+			}
+			if (emptyIfNotFound)
+				return "";
+
+			std::string errorMessage = std::format("Response header {} not found", key);
+			LOG_ERROR(errorMessage);
+			throw std::runtime_error(errorMessage);
+		}
+	};
+
 	static void globalInitialize();
 
 	static void globalTerminate();
@@ -113,14 +154,9 @@ class CurlWrapper
 	static std::string basicAuthorization(const std::string &user, const std::string &password);
 	static std::string bearerAuthorization(const std::string &bearerToken);
 
-	static void httpGetBinary(
-		std::string url, long timeoutInSeconds, std::string authorization, const std::vector<std::string>& otherHeaders, std::string referenceToLog, int maxRetryNumber,
-		int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary,
-		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt,
-		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
-	);
+	static void httpGetBinary(InputParameters& inputParameters, OutputParameters& outputParameters);
 
+	[[deprecated]]
 	static std::string httpGet(
 		const std::string &url, long timeoutInSeconds, const std::string &authorization = "", const std::vector<std::string> &otherHeaders = std::vector<std::string>(),
 		const std::string &referenceToLog = "",
@@ -129,6 +165,7 @@ class CurlWrapper
 		const std::optional<std::string> &proxyPassword = std::nullopt,
 		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
+	static std::string httpGet(InputParameters& inputParameters, OutputParameters& outputParameters);
 
 	static nlohmann::json httpGetJson(
 		const std::string& url, long timeoutInSeconds, const std::string& authorization = "", const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string& referenceToLog = "",

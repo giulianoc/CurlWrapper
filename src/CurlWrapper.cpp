@@ -112,11 +112,25 @@ nlohmann::json CurlWrapper::httpGetJson(
 #ifdef COMPRESSOR
 	if (outputCompressed)
 	{
-		std::vector<uint8_t> binary;
-		httpGetBinary(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber,
-			secondsToWaitBeforeToRetry, binary, proxyURL, proxyUsername, proxyPassword, httpSSLVersion, verbose
-		);
-		return JSONUtils::toJson<nlohmann::json>(Compressor::decompress_string(binary));
+		InputParameters inputParameters;
+		inputParameters.url = url;
+		inputParameters.timeoutInSeconds = timeoutInSeconds;
+		inputParameters.authorization = authorization;
+		inputParameters.otherHeaders = otherHeaders;
+		inputParameters.referenceToLog = referenceToLog;
+		inputParameters.maxRetryNumber = maxRetryNumber;
+		inputParameters.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry;
+		inputParameters.outputCompressed = outputCompressed;
+		inputParameters.proxyURL = proxyURL;
+		inputParameters.proxyUsername = proxyUsername;
+		inputParameters.proxyPassword = proxyPassword;
+		inputParameters.httpSSLVersion = httpSSLVersion;
+		inputParameters.verbose = verbose;
+
+		OutputParameters outputParameters;
+
+		httpGetBinary(inputParameters, outputParameters);
+		return JSONUtils::toJson<nlohmann::json>(Compressor::decompress_string(outputParameters.binary));
 	}
 #endif
 	const std::string response = httpGet(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog,
@@ -853,18 +867,60 @@ static int curlDebugCallback(CURL*, curl_infotype type, char* data, size_t size,
 	return 0;
 }
 
+static size_t responseHeadersCallback(char* buffer, size_t size, size_t nitems, void* userdata)
+{
+	const size_t bytes = size * nitems;
+	std::string line(buffer, bytes);
+
+	// fine headers o status line
+	if (line == "\r\n" || line.rfind("HTTP/", 0) == 0)
+		return bytes;
+
+	auto pos = line.find(':');
+	if (pos == std::string::npos)
+		return bytes;
+
+	std::string key = line.substr(0, pos);
+	std::string val = line.substr(pos + 1);
+
+	key = StringUtils::rtrim(key);
+	val = StringUtils::rtrim(val);
+	val = StringUtils::ltrim(val);
+
+	auto* hdrs = static_cast<std::vector<std::pair<std::string, std::string>>*>(userdata);
+	// ho usato un vettore anzicche una mappa perchè altrimenti headers duplicati (es. set-cookie) verrebbero sovrascritti
+	hdrs->emplace_back(key, val);
+
+	return bytes;
+}
+
 std::string CurlWrapper::httpGet(
-	const std::string &url, long timeoutInSeconds, const std::string &authorization, const std::vector<std::string> &otherHeaders,
+	const std::string &url, long timeoutInSeconds, const std::string &authorization,
+	const std::vector<std::string> &otherHeaders,
 	const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
 	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
 	const std::optional<std::string>& proxyPassword, const std::optional<std::string> &httpSSLVersion, bool verbose
 )
 {
-	std::vector<uint8_t> binary;
-	httpGetBinary(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog, maxRetryNumber,
-		secondsToWaitBeforeToRetry, binary, proxyURL, proxyUsername, proxyPassword, httpSSLVersion, verbose);
+	InputParameters inputParameters;
+	inputParameters.url = url;
+	inputParameters.timeoutInSeconds = timeoutInSeconds;
+	inputParameters.authorization = authorization;
+	inputParameters.otherHeaders = otherHeaders;
+	inputParameters.referenceToLog = referenceToLog;
+	inputParameters.maxRetryNumber = maxRetryNumber;
+	inputParameters.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry;
+	inputParameters.proxyURL = proxyURL;
+	inputParameters.proxyUsername = proxyUsername;
+	inputParameters.proxyPassword = proxyPassword;
+	inputParameters.httpSSLVersion = httpSSLVersion;
+	inputParameters.verbose = verbose;
 
-	std::string response = std::string(binary.begin(), binary.end());
+	OutputParameters outputParameters;
+
+	httpGetBinary(inputParameters, outputParameters);
+
+	std::string response = std::string(outputParameters.binary.begin(), outputParameters.binary.end());
 
 	while (!response.empty() && (response.back() == 10 || response.back() == 13))
 		response.pop_back();
@@ -872,16 +928,25 @@ std::string CurlWrapper::httpGet(
 	return response;
 }
 
-void CurlWrapper::httpGetBinary(
-	std::string url, long timeoutInSeconds, std::string authorization, const std::vector<std::string>& otherHeaders, std::string referenceToLog,
-	int maxRetryNumber, int secondsToWaitBeforeToRetry, std::vector<uint8_t> &binary,
-	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
-	const std::optional<std::string>& proxyPassword, const std::optional<std::string> &httpSSLVersion, bool verbose
-)
+std::string CurlWrapper::httpGet(InputParameters& inputParameters, OutputParameters& outputParameters)
+{
+	httpGetBinary(inputParameters, outputParameters);
+
+	auto response = std::string(outputParameters.binary.begin(), outputParameters.binary.end());
+
+	while (!response.empty() && (response.back() == 10 || response.back() == 13))
+		response.pop_back();
+
+	outputParameters.response = response;
+
+	return outputParameters.response;
+}
+
+void CurlWrapper::httpGetBinary(InputParameters& inputParameters, OutputParameters& outputParameters)
 {
 	std::string api = "httpGet";
 
-	for (int retryNumber = 0; retryNumber <= maxRetryNumber; retryNumber++)
+	for (int retryNumber = 0; retryNumber <= inputParameters.maxRetryNumber; retryNumber++)
 	{
 		CURL *curl = nullptr;
 		curl_slist *headersList = nullptr;
@@ -900,42 +965,44 @@ void CurlWrapper::httpGetBinary(
 				}
 
 				// request.setOpt(new curlpp::options::Url(url));
-				curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+				curl_easy_setopt(curl, CURLOPT_URL, inputParameters.url.c_str());
 
-				if (proxyURL && !proxyURL->empty())
+				if (inputParameters.proxyURL && !inputParameters.proxyURL->empty())
 				{
 					// i.e.: "http://proxy:port"
-					curl_easy_setopt(curl, CURLOPT_PROXY, proxyURL->c_str());
+					curl_easy_setopt(curl, CURLOPT_PROXY, inputParameters.proxyURL->c_str());
 					// CURLOPT_PROXYTYPE: dovrebbe dedurlo dallo schema di CURLOPT_PROXY
 					// curl_easy_setopt(curl, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
-					if (proxyURL->starts_with("http://") && url.starts_with("https://"))
+					if (inputParameters.proxyURL->starts_with("http://") && inputParameters.url.starts_with("https://"))
 						curl_easy_setopt(curl, CURLOPT_HTTPPROXYTUNNEL, 1L);
-					if (proxyUsername && !proxyUsername->empty() && proxyPassword && !proxyPassword->empty())
+					if (inputParameters.proxyUsername && !inputParameters.proxyUsername->empty()
+						&& inputParameters.proxyPassword && !inputParameters.proxyPassword->empty())
 					{
 						curl_easy_setopt(curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY); // BASIC, NTLM, ...
 						curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,
-							std::format("{}:{}", *proxyUsername, *proxyPassword).c_str());
+							std::format("{}:{}", *(inputParameters.proxyUsername),
+								*(inputParameters.proxyPassword)).c_str());
 					}
 				}
 
 				// uso optional per evitare di usare memoria se verbose è false
 				std::optional<std::array<char, CURL_ERROR_SIZE>> errorBuffer;
 				CurlDebugContext debugContext;
-				if (verbose)
+				if (inputParameters.verbose)
 				{
 					errorBuffer.emplace();
 					errorBuffer->fill('\0');
 					curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuffer->data());
 
-					debugContext.enabled = verbose;
+					debugContext.enabled = inputParameters.verbose;
 					curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 					curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, curlDebugCallback);
 					curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &debugContext);
 				}
 
-				if (httpSSLVersion && !httpSSLVersion->empty())
+				if (inputParameters.httpSSLVersion && !inputParameters.httpSSLVersion->empty())
 				{
-					switch (hash_case(*httpSSLVersion))
+					switch (hash_case(*(inputParameters.httpSSLVersion)))
 					{
 						case "TLSv1_2"_case:
 							curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
@@ -948,12 +1015,15 @@ void CurlWrapper::httpGetBinary(
 				// timeout consistent with nginx configuration
 				// (fastcgi_read_timeout)
 				// request.setOpt(new curlpp::options::Timeout(timeoutInSeconds));
-				curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeoutInSeconds);
+				curl_easy_setopt(curl, CURLOPT_TIMEOUT, inputParameters.timeoutInSeconds);
+
+				curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, responseHeadersCallback);
+				curl_easy_setopt(curl, CURLOPT_HEADERDATA, &(outputParameters.responseHeaders));
 
 				// std::string httpsPrefix("https");
 				// if (url.size() >= httpsPrefix.size() &&
 				// 	0 == url.compare(0, httpsPrefix.size(), httpsPrefix))
-				if (url.starts_with("https"))
+				if (inputParameters.url.starts_with("https"))
 				{
 					/*
 					typedef curlpp::OptionTrait<std::std::string, CURLOPT_SSLCERTPASSWD>
@@ -1037,17 +1107,18 @@ void CurlWrapper::httpGetBinary(
 				request.setOpt(new curlpp::options::HttpHeader(headers));
 				*/
 				{
-					if (!authorization.empty())
-						headersList = curl_slist_append(headersList, std::format("Authorization: {}", authorization).c_str());
+					if (!inputParameters.authorization.empty())
+						headersList = curl_slist_append(headersList,
+							std::format("Authorization: {}", inputParameters.authorization).c_str());
 
-					for (const std::string& header : otherHeaders)
+					for (const std::string& header : inputParameters.otherHeaders)
 						headersList = curl_slist_append(headersList, header.c_str());
 
 					curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headersList);
 				}
 
 				// request.setOpt(new curlpp::options::WriteStream(&response));
-				curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&binary);
+				curl_easy_setopt(curl, CURLOPT_WRITEDATA, &(outputParameters.binary));
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteBytesCallback);
 
 				LOG_DEBUG(
@@ -1056,7 +1127,8 @@ void CurlWrapper::httpGetBinary(
 					", url: {}"
 					", authorization: {}"
 					", otherHeaders.size: {}",
-					api, referenceToLog, url, authorization, otherHeaders.size()
+					api, inputParameters.referenceToLog, inputParameters.url,
+					inputParameters.authorization, inputParameters.otherHeaders.size()
 				);
 
 				// store response headers in the response
@@ -1077,7 +1149,7 @@ void CurlWrapper::httpGetBinary(
 						", url: {}",
 						api, static_cast<int>(curlCode),
 						(errorBuffer && (*errorBuffer)[0] != '\0') ? errorBuffer->data() : curl_easy_strerror(curlCode),
-						url
+						inputParameters.url
 					);
 					// LOG_ERROR(errorMessage);
 
@@ -1099,7 +1171,7 @@ void CurlWrapper::httpGetBinary(
 						"{}"
 						", @statistics@ - elapsed (secs): @{}@",
 						// ", response: {}",
-						api, referenceToLog,
+						api, inputParameters.referenceToLog,
 						std::chrono::duration_cast<std::chrono::seconds>(end - start).count() // , std::regex_replace(response, std::regex("\n"), " ")
 					);
 				}
@@ -1112,7 +1184,7 @@ void CurlWrapper::httpGetBinary(
 						", @statistics@ - elapsed (secs): @{}@"
 						// ", response: {}"
 						", responseCode: {}",
-						api, url, referenceToLog,
+						api, inputParameters.url, inputParameters.referenceToLog,
 						std::chrono::duration_cast<std::chrono::seconds>(end - start).count(), // std::regex_replace(response, std::regex("\n"), " "),
 						responseCode
 					);
@@ -1164,7 +1236,7 @@ void CurlWrapper::httpGetBinary(
 					throw;
 			}
 
-			if (retryNumber < maxRetryNumber)
+			if (retryNumber < inputParameters.maxRetryNumber)
 			{
 				LOG_WARN(
 					"{} retry"
@@ -1175,9 +1247,11 @@ void CurlWrapper::httpGetBinary(
 					", retryNumber: {}"
 					", maxRetryNumber: {}"
 					", secondsToWaitBeforeToRetry: {}",
-					api, referenceToLog, url, timeoutInSeconds, e.what(), retryNumber, maxRetryNumber, secondsToWaitBeforeToRetry * (retryNumber + 1)
+					api, inputParameters.referenceToLog, inputParameters.url, inputParameters.timeoutInSeconds,
+					e.what(), retryNumber, inputParameters.maxRetryNumber,
+					inputParameters.secondsToWaitBeforeToRetry * (retryNumber + 1)
 				);
-				std::this_thread::sleep_for(std::chrono::seconds(secondsToWaitBeforeToRetry * (retryNumber + 1)));
+				std::this_thread::sleep_for(std::chrono::seconds(inputParameters.secondsToWaitBeforeToRetry * (retryNumber + 1)));
 			}
 			else
 			{
@@ -1189,7 +1263,8 @@ void CurlWrapper::httpGetBinary(
 					", e.type: {}"
 					", exception: {}",
 					// ", response.str(): {}",
-					api, referenceToLog, url, timeoutInSeconds, e.type(), e.what() // , response
+					api, inputParameters.referenceToLog, inputParameters.url, inputParameters.timeoutInSeconds,
+					e.type(), e.what() // , response
 				);
 
 				if (e.type() == "ServerNotReachable")
