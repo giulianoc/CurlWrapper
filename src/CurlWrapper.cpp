@@ -133,8 +133,23 @@ nlohmann::json CurlWrapper::httpGetJson(
 		return JSONUtils::toJson<nlohmann::json>(Compressor::decompress_string(outputParameters.binary));
 	}
 #endif
-	const std::string response = httpGet(url, timeoutInSeconds, authorization, otherHeaders, referenceToLog,
-		maxRetryNumber, secondsToWaitBeforeToRetry, proxyURL, proxyUsername, proxyPassword, httpSSLVersion, verbose);
+	InputParameters inputParameters;
+	inputParameters.url = url;
+	inputParameters.timeoutInSeconds = timeoutInSeconds;
+	inputParameters.authorization = authorization;
+	inputParameters.otherHeaders = otherHeaders;
+	inputParameters.referenceToLog = referenceToLog;
+	inputParameters.maxRetryNumber = maxRetryNumber;
+	inputParameters.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry;
+	inputParameters.proxyURL = proxyURL;
+	inputParameters.proxyUsername = proxyUsername;
+	inputParameters.proxyPassword = proxyPassword;
+	inputParameters.httpSSLVersion = httpSSLVersion;
+	inputParameters.verbose = verbose;
+
+	OutputParameters outputParameters;
+	const std::string response = httpGet(inputParameters, outputParameters);
+
 	return JSONUtils::toJson<nlohmann::json>(response);
 }
 
@@ -1981,10 +1996,11 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 					"{} failed"
 					"{}"
 					", url: {}"
+					", otherHeaders: {}"
 					", timeoutInSeconds: {}"
 					", exception: {}"
 					", response.str(): {}",
-					api, referenceToLog, url, timeoutInSeconds, e.what(), responseHeaderAndBody
+					api, referenceToLog, url, fmt::join(otherHeaders, ", "), timeoutInSeconds, e.what(), responseHeaderAndBody
 				);
 
 				if (e.type() == "ServerNotReachable")
