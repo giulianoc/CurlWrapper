@@ -1887,7 +1887,10 @@ std::pair<std::string, std::string> CurlWrapper::httpPostPutString(
 				// long responseCode = curlpp::infos::ResponseCode::get(request);
 				long responseCode;
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				if (responseCode == 200 || responseCode == 201 || responseCode == 308 // permanently removed/redirect
+				if (responseCode == 200
+					|| responseCode == 201
+					|| responseCode == 204
+					|| responseCode == 308 // permanently removed/redirect
 				)
 				{
 					LOG_DEBUG(
