@@ -887,6 +887,8 @@ static size_t responseHeadersCallback(char* buffer, size_t size, size_t nitems, 
 	const size_t bytes = size * nitems;
 	std::string line(buffer, bytes);
 
+	LOG_INFO("responseHeadersCallback: {}", line);
+
 	// fine headers o status line
 	if (line == "\r\n" || line.rfind("HTTP/", 0) == 0)
 		return bytes;
