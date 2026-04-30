@@ -885,28 +885,36 @@ static int curlDebugCallback(CURL*, curl_infotype type, char* data, size_t size,
 static size_t responseHeadersCallback(char* buffer, size_t size, size_t nitems, void* userdata)
 {
 	const size_t bytes = size * nitems;
-	std::string line(buffer, bytes);
+	std::string line(buffer, bytes); // include \r\n
 
-	LOG_INFO("responseHeadersCallback: {}", line);
+	// LOG_INFO("responseHeadersCallback: {}", line);
 
-	// fine headers o status line
-	if (line == "\r\n" || line.rfind("HTTP/", 0) == 0)
+    auto* hdrs = static_cast<std::vector<std::pair<std::string, std::string>>*>(userdata);
+
+    // Nuovo blocco di risposta: status line "HTTP/1.1 200 OK\r\n"
+	if (line.starts_with("HTTP/"))
+	{
+		hdrs->clear();           // tieni SOLO gli header dell'ultimo blocco
+		return bytes;
+	}
+
+	// Fine headers
+	if (line == "\r\n")
 		return bytes;
 
 	auto pos = line.find(':');
 	if (pos == std::string::npos)
 		return bytes;
 
-	std::string key = line.substr(0, pos);
-	std::string val = line.substr(pos + 1);
+	std::string key (line.substr(0, pos));
+	std::string val (line.substr(pos + 1));
 
 	key = StringUtils::rtrim(key);
 	val = StringUtils::rtrim(val);
 	val = StringUtils::ltrim(val);
 
-	auto* hdrs = static_cast<std::vector<std::pair<std::string, std::string>>*>(userdata);
 	// ho usato un vettore anzicche una mappa perchè altrimenti headers duplicati (es. set-cookie) verrebbero sovrascritti
-	hdrs->emplace_back(key, val);
+	hdrs->emplace_back(std::move(key), std::move(val));
 
 	return bytes;
 }
@@ -1034,6 +1042,7 @@ void CurlWrapper::httpGetBinary(InputParameters& inputParameters, OutputParamete
 				// request.setOpt(new curlpp::options::Timeout(timeoutInSeconds));
 				curl_easy_setopt(curl, CURLOPT_TIMEOUT, inputParameters.timeoutInSeconds);
 
+				outputParameters.responseHeaders.clear();
 				curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, responseHeadersCallback);
 				curl_easy_setopt(curl, CURLOPT_HEADERDATA, &(outputParameters.responseHeaders));
 
