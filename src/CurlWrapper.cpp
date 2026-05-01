@@ -100,6 +100,7 @@ std::string CurlWrapper::unescape(const std::string &url)
 	return buffer;
 }
 
+/*
 nlohmann::json CurlWrapper::httpGetJson(
 	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::vector<std::string>& otherHeaders,
 	const std::string& referenceToLog, int maxRetryNumber,
@@ -112,45 +113,56 @@ nlohmann::json CurlWrapper::httpGetJson(
 #ifdef COMPRESSOR
 	if (outputCompressed)
 	{
-		InputParameters inputParameters;
-		inputParameters.url = url;
-		inputParameters.timeoutInSeconds = timeoutInSeconds;
-		inputParameters.authorization = authorization;
-		inputParameters.otherHeaders = otherHeaders;
-		inputParameters.referenceToLog = referenceToLog;
-		inputParameters.maxRetryNumber = maxRetryNumber;
-		inputParameters.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry;
-		inputParameters.outputCompressed = outputCompressed;
-		inputParameters.proxyURL = proxyURL;
-		inputParameters.proxyUsername = proxyUsername;
-		inputParameters.proxyPassword = proxyPassword;
-		inputParameters.httpSSLVersion = httpSSLVersion;
-		inputParameters.verbose = verbose;
-
+		InputParameters inputParameters {
+			.url = url,
+			.timeoutInSeconds = timeoutInSeconds,
+			.authorization = authorization,
+			.otherHeaders = otherHeaders,
+			.referenceToLog = referenceToLog,
+			.maxRetryNumber = maxRetryNumber,
+			.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry,
+			.outputCompressed = outputCompressed,
+			.proxyURL = proxyURL,
+			.proxyUsername = proxyUsername,
+			.proxyPassword = proxyPassword,
+			.httpSSLVersion = httpSSLVersion,
+			.verbose = verbose
+		};
 		OutputParameters outputParameters;
-
 		httpGetBinary(inputParameters, outputParameters);
 		return JSONUtils::toJson<nlohmann::json>(Compressor::decompress_string(outputParameters.binary));
 	}
 #endif
-	InputParameters inputParameters;
-	inputParameters.url = url;
-	inputParameters.timeoutInSeconds = timeoutInSeconds;
-	inputParameters.authorization = authorization;
-	inputParameters.otherHeaders = otherHeaders;
-	inputParameters.referenceToLog = referenceToLog;
-	inputParameters.maxRetryNumber = maxRetryNumber;
-	inputParameters.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry;
-	inputParameters.proxyURL = proxyURL;
-	inputParameters.proxyUsername = proxyUsername;
-	inputParameters.proxyPassword = proxyPassword;
-	inputParameters.httpSSLVersion = httpSSLVersion;
-	inputParameters.verbose = verbose;
-
+	InputParameters inputParameters {
+		.url = url,
+		.timeoutInSeconds = timeoutInSeconds,
+		.authorization = authorization,
+		.otherHeaders = otherHeaders,
+		.referenceToLog = referenceToLog,
+		.maxRetryNumber = maxRetryNumber,
+		.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry,
+		.proxyURL = proxyURL,
+		.proxyUsername = proxyUsername,
+		.proxyPassword = proxyPassword,
+		.httpSSLVersion = httpSSLVersion,
+		.verbose = verbose
+	};
 	OutputParameters outputParameters;
 	const std::string response = httpGet(inputParameters, outputParameters);
 
 	return JSONUtils::toJson<nlohmann::json>(response);
+}
+*/
+nlohmann::json CurlWrapper::httpGetJson(InputParameters& inputParameters, OutputParameters& outputParameters)
+{
+#ifdef COMPRESSOR
+	if (inputParameters.outputCompressed)
+	{
+		httpGetBinary(inputParameters, outputParameters);
+		return JSONUtils::toJson<nlohmann::json>(Compressor::decompress_string(outputParameters.binary));
+	}
+#endif
+	return JSONUtils::toJson<nlohmann::json>(httpGet(inputParameters, outputParameters));
 }
 
 std::string CurlWrapper::httpPostString(
@@ -917,40 +929,6 @@ static size_t responseHeadersCallback(char* buffer, size_t size, size_t nitems, 
 	hdrs->emplace_back(std::move(key), std::move(val));
 
 	return bytes;
-}
-
-std::string CurlWrapper::httpGet(
-	const std::string &url, long timeoutInSeconds, const std::string &authorization,
-	const std::vector<std::string> &otherHeaders,
-	const std::string &referenceToLog, int maxRetryNumber, int secondsToWaitBeforeToRetry,
-	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
-	const std::optional<std::string>& proxyPassword, const std::optional<std::string> &httpSSLVersion, bool verbose
-)
-{
-	InputParameters inputParameters;
-	inputParameters.url = url;
-	inputParameters.timeoutInSeconds = timeoutInSeconds;
-	inputParameters.authorization = authorization;
-	inputParameters.otherHeaders = otherHeaders;
-	inputParameters.referenceToLog = referenceToLog;
-	inputParameters.maxRetryNumber = maxRetryNumber;
-	inputParameters.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry;
-	inputParameters.proxyURL = proxyURL;
-	inputParameters.proxyUsername = proxyUsername;
-	inputParameters.proxyPassword = proxyPassword;
-	inputParameters.httpSSLVersion = httpSSLVersion;
-	inputParameters.verbose = verbose;
-
-	OutputParameters outputParameters;
-
-	httpGetBinary(inputParameters, outputParameters);
-
-	std::string response = std::string(outputParameters.binary.begin(), outputParameters.binary.end());
-
-	while (!response.empty() && (response.back() == 10 || response.back() == 13))
-		response.pop_back();
-
-	return response;
 }
 
 std::string CurlWrapper::httpGet(InputParameters& inputParameters, OutputParameters& outputParameters)

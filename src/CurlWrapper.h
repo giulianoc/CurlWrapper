@@ -156,17 +156,10 @@ class CurlWrapper
 
 	static void httpGetBinary(InputParameters& inputParameters, OutputParameters& outputParameters);
 
-	[[deprecated]]
-	static std::string httpGet(
-		const std::string &url, long timeoutInSeconds, const std::string &authorization = "", const std::vector<std::string> &otherHeaders = std::vector<std::string>(),
-		const std::string &referenceToLog = "",
-		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15,
-		const std::optional<std::string> &proxyURL = std::nullopt, const std::optional<std::string> &proxyUsername = std::nullopt,
-		const std::optional<std::string> &proxyPassword = std::nullopt,
-		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
-	);
 	static std::string httpGet(InputParameters& inputParameters, OutputParameters& outputParameters);
 
+	/*
+	[[deprecated]]
 	static nlohmann::json httpGetJson(
 		const std::string& url, long timeoutInSeconds, const std::string& authorization = "", const std::vector<std::string>& otherHeaders = std::vector<std::string>(), const std::string& referenceToLog = "",
 		int maxRetryNumber = 0, int secondsToWaitBeforeToRetry = 15, bool outputCompressed = false,
@@ -174,6 +167,8 @@ class CurlWrapper
 		const std::optional<std::string> &proxyPassword = std::nullopt,
 		const std::optional<std::string> &httpSSLVersion = std::nullopt, bool verbose = false
 	);
+	*/
+	static nlohmann::json httpGetJson(InputParameters& inputParameters, OutputParameters& outputParameters);
 
 	static std::string httpDelete(
 		std::string url, long timeoutInSeconds, std::string authorization,
