@@ -100,60 +100,7 @@ std::string CurlWrapper::unescape(const std::string &url)
 	return buffer;
 }
 
-/*
-nlohmann::json CurlWrapper::httpGetJson(
-	const std::string& url, long timeoutInSeconds, const std::string& authorization, const std::vector<std::string>& otherHeaders,
-	const std::string& referenceToLog, int maxRetryNumber,
-	int secondsToWaitBeforeToRetry, bool outputCompressed,
-	const std::optional<std::string>& proxyURL, const std::optional<std::string>& proxyUsername,
-	const std::optional<std::string>& proxyPassword,
-	const std::optional<std::string> &httpSSLVersion, bool verbose
-)
-{
-#ifdef COMPRESSOR
-	if (outputCompressed)
-	{
-		InputParameters inputParameters {
-			.url = url,
-			.timeoutInSeconds = timeoutInSeconds,
-			.authorization = authorization,
-			.otherHeaders = otherHeaders,
-			.referenceToLog = referenceToLog,
-			.maxRetryNumber = maxRetryNumber,
-			.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry,
-			.outputCompressed = outputCompressed,
-			.proxyURL = proxyURL,
-			.proxyUsername = proxyUsername,
-			.proxyPassword = proxyPassword,
-			.httpSSLVersion = httpSSLVersion,
-			.verbose = verbose
-		};
-		OutputParameters outputParameters;
-		httpGetBinary(inputParameters, outputParameters);
-		return JSONUtils::toJson<nlohmann::json>(Compressor::decompress_string(outputParameters.binary));
-	}
-#endif
-	InputParameters inputParameters {
-		.url = url,
-		.timeoutInSeconds = timeoutInSeconds,
-		.authorization = authorization,
-		.otherHeaders = otherHeaders,
-		.referenceToLog = referenceToLog,
-		.maxRetryNumber = maxRetryNumber,
-		.secondsToWaitBeforeToRetry = secondsToWaitBeforeToRetry,
-		.proxyURL = proxyURL,
-		.proxyUsername = proxyUsername,
-		.proxyPassword = proxyPassword,
-		.httpSSLVersion = httpSSLVersion,
-		.verbose = verbose
-	};
-	OutputParameters outputParameters;
-	const std::string response = httpGet(inputParameters, outputParameters);
-
-	return JSONUtils::toJson<nlohmann::json>(response);
-}
-*/
-nlohmann::json CurlWrapper::httpGetJson(InputParameters& inputParameters, OutputParameters& outputParameters)
+nlohmann::json CurlWrapper::httpGetJson(GetInputParameters& inputParameters, OutputParameters& outputParameters)
 {
 #ifdef COMPRESSOR
 	if (inputParameters.outputCompressed)
@@ -931,7 +878,7 @@ static size_t responseHeadersCallback(char* buffer, size_t size, size_t nitems, 
 	return bytes;
 }
 
-std::string CurlWrapper::httpGet(InputParameters& inputParameters, OutputParameters& outputParameters)
+std::string CurlWrapper::httpGet(GetInputParameters& inputParameters, OutputParameters& outputParameters)
 {
 	httpGetBinary(inputParameters, outputParameters);
 
@@ -945,7 +892,7 @@ std::string CurlWrapper::httpGet(InputParameters& inputParameters, OutputParamet
 	return outputParameters.response;
 }
 
-void CurlWrapper::httpGetBinary(InputParameters& inputParameters, OutputParameters& outputParameters)
+void CurlWrapper::httpGetBinary(GetInputParameters& inputParameters, OutputParameters& outputParameters)
 {
 	std::string api = "httpGet";
 
