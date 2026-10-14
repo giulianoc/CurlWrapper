@@ -2441,6 +2441,12 @@ std::string CurlWrapper::httpPostPutFile(
 					curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, contentRangeEnd_Excluded - contentRangeStart);
 				else
 					curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, fileSizeInBytes);
+				// Con CURLOPT_UPLOAD, curl usa CURLOPT_INFILESIZE_LARGE per il Content-Length.
+				// Se non è settato, in HTTP/1.1 curl usa 'Transfer-Encoding: chunked' (non accettato ad es. da TikTok)
+				if (contentRangeStart >= 0 && contentRangeEnd_Excluded > 0)
+					curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(contentRangeEnd_Excluded - contentRangeStart));
+				else
+					curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(fileSizeInBytes));
 
 				// timeout consistent with nginx configuration
 				// (fastcgi_read_timeout)
@@ -2613,7 +2619,8 @@ std::string CurlWrapper::httpPostPutFile(
 				// long responseCode = curlpp::infos::ResponseCode::get(request);
 				long responseCode;
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				if (responseCode == 200 || responseCode == 201)
+				// 206 (Partial Content): risposta ad un chunk intermedio di un upload a chunks (es.: TikTok)
+				if (responseCode == 200 || responseCode == 201 || responseCode == 206)
 				{
 					LOG_DEBUG(
 						"{} success"
